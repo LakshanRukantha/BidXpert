@@ -3,15 +3,16 @@
 import {
   BadgeCheck,
   Bell,
-  Bot,
   ChevronRight,
   ChevronsUpDown,
   Command,
   LifeBuoy,
   LogOut,
   Send,
-  Settings2,
-  SquareTerminal,
+  List,
+  CreditCard,
+  LayoutDashboard,
+  PackageSearch,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,8 +66,8 @@ function getFirstLetters(input: string) {
   return firstLetters[0] + firstLetters[1];
 }
 
-const IS_LOGGED_IN = false;
-const IS_ADMIN = true;
+const IS_LOGGED_IN = true;
+const IS_ADMIN = false;
 
 // Mock data for database emulation
 const categories = [
@@ -86,7 +87,7 @@ const data = {
     {
       title: "Live Auctions",
       url: "/",
-      icon: SquareTerminal,
+      icon: PackageSearch,
       // isActive: true,
       items: [
         // {
@@ -98,7 +99,7 @@ const data = {
     {
       title: "Categories",
       url: "",
-      icon: Bot,
+      icon: List,
       isActive: true,
       items: categories.map((category) => ({
         title: category.title,
@@ -110,7 +111,7 @@ const data = {
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: Settings2,
+      icon: LayoutDashboard,
       isActive: true,
       items: [
         {
@@ -130,14 +131,14 @@ const data = {
     {
       title: "Live Auctions",
       url: "/",
-      icon: SquareTerminal,
+      icon: PackageSearch,
       items: [],
     },
     {
       title: "Categories",
       url: "",
       isActive: false,
-      icon: Bot,
+      icon: List,
       items: categories.map((category) => ({
         title: category.title,
         url: category.url,
@@ -148,7 +149,7 @@ const data = {
     {
       title: "Admin Dashboard",
       url: "/admin-dashboard",
-      icon: SquareTerminal,
+      icon: LayoutDashboard,
       isActive: true,
       items: [
         {
@@ -164,14 +165,14 @@ const data = {
     {
       title: "Live Auctions",
       url: "/",
-      icon: SquareTerminal,
+      icon: PackageSearch,
       items: [],
     },
     {
       title: "Categories",
       url: "",
       isActive: false,
-      icon: Bot,
+      icon: List,
       items: categories.map((category) => ({
         title: category.title,
         url: category.url,
@@ -351,8 +352,8 @@ export default function Page({
                         Account
                       </DropdownMenuItem>
                       <DropdownMenuItem>
-                        <BadgeCheck />
-                        Transaction
+                        <CreditCard />
+                        Transactions
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Bell />
