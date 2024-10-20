@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import SidebarComponent from "@/components/sidebar";
 
 export const metadata: Metadata = {
   title: "BidXpert | Smart & Efficient Online Bidding Platform",
@@ -21,7 +22,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SidebarComponent>{children}</SidebarComponent>
         </ThemeProvider>
       </body>
     </html>
