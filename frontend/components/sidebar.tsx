@@ -60,16 +60,13 @@ import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 function getFirstLetters(input: string) {
   const words = input.split(" ");
   const firstLetters = words.map((word: string) => word.charAt(0));
   return firstLetters[0] + firstLetters[1];
 }
-
-const IS_LOGGED_IN = false;
-const IS_ADMIN = false;
 
 // Mock data for database emulation
 const categories = [
@@ -80,11 +77,6 @@ const categories = [
 ];
 
 const data = {
-  user: {
-    name: "Lakshan Rukantha",
-    email: "rukanthalakshan@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Live Auctions",
@@ -195,12 +187,6 @@ const data = {
   ],
 };
 
-const navItems = IS_LOGGED_IN
-  ? IS_ADMIN
-    ? data.navAdminProtected
-    : data.navUserProtected
-  : data.navMain;
-
 export default function SideBar({
   children,
 }: Readonly<{
@@ -208,6 +194,15 @@ export default function SideBar({
 }>) {
   const pathName = usePathname();
   const session = useSession();
+
+  const IS_LOGGED_IN = session && session.status === "authenticated";
+  const IS_ADMIN = IS_LOGGED_IN && session.data.user.role === "admin";
+
+  const navItems = IS_LOGGED_IN
+    ? IS_ADMIN
+      ? data.navAdminProtected
+      : data.navUserProtected
+    : data.navMain;
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">
@@ -275,14 +270,6 @@ export default function SideBar({
             </SidebarMenu>
           </SidebarGroup>
           <Separator />
-          {session && session.data?.user && (
-            <div>
-              <p>ID: {session.data.user.id}</p>
-              <p>Email: {session.data.user.email}</p>
-              <p>Name: {session.data.user.name}</p>
-              <p>Role: {session.data.user.role}</p>
-            </div>
-          )}
           <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
               <SidebarMenu>
@@ -311,20 +298,17 @@ export default function SideBar({
                       className="data-[state=open]:bg-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
                       <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarImage
-                          src={data.user.avatar}
-                          alt={data.user.name}
-                        />
+                        <AvatarImage src={""} alt={session.data.user.name} />
                         <AvatarFallback className="rounded-lg">
-                          {getFirstLetters(data.user.name)}
+                          {getFirstLetters(session.data.user.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
-                          {data.user.name}
+                          {session.data.user.name}
                         </span>
                         <span className="truncate text-xs">
-                          {data.user.email}
+                          {session.data.user.email}
                         </span>
                       </div>
                       <ChevronsUpDown className="ml-auto size-4" />
@@ -339,20 +323,17 @@ export default function SideBar({
                     <DropdownMenuLabel className="p-0 font-normal">
                       <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                         <Avatar className="h-8 w-8 rounded-lg">
-                          <AvatarImage
-                            src={data.user.avatar}
-                            alt={data.user.name}
-                          />
+                          <AvatarImage src={""} alt={session.data.user.name} />
                           <AvatarFallback className="rounded-lg">
-                            {getFirstLetters(data.user.name)}
+                            {getFirstLetters(session.data.user.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-semibold">
-                            {data.user.name}
+                            {session.data.user.name}
                           </span>
                           <span className="truncate text-xs">
-                            {data.user.email}
+                            {session.data.user.email}
                           </span>
                         </div>
                       </div>
@@ -373,7 +354,7 @@ export default function SideBar({
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut()}>
                       <LogOut />
                       Log out
                     </DropdownMenuItem>
