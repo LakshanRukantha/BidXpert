@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import SidebarComponent from "@/components/sidebar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "BidXpert | Smart & Efficient Online Bidding Platform",
@@ -23,6 +24,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <SidebarComponent>{children}</SidebarComponent>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
