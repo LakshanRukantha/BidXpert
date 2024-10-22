@@ -1,3 +1,5 @@
+"use client";
+
 import AuctionItem from "@/components/auction-item";
 import { Button } from "@/components/ui/button";
 import {

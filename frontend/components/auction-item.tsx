@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -12,6 +15,7 @@ import { Input } from "./ui/input";
 import { Separator } from "@radix-ui/react-separator";
 
 export default function AuctionItem() {
+  const { toast } = useToast();
   return (
     <Card className="p-2 max-w-72 w-full">
       <CardHeader>
@@ -66,7 +70,19 @@ export default function AuctionItem() {
         <Button size={"icon"} variant={"outline"}>
           <Pencil />
         </Button>
-        <Button className="w-full flex-1">Place Bid</Button>
+        <Button
+          className="w-full flex-1"
+          onClick={() => {
+            toast({
+              variant: "default",
+              title: "This is a title",
+              description: "This is a description",
+            });
+            console.log("Bid placed");
+          }}
+        >
+          Place Bid
+        </Button>
       </CardFooter>
     </Card>
   );

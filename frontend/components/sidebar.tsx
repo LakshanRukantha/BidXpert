@@ -14,7 +14,7 @@ import {
   LayoutDashboard,
   PackageSearch,
 } from "lucide-react";
-
+import { Toaster } from "@/components/ui/toaster";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -409,7 +409,10 @@ export default function SideBar({
             <ModeToggle />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          {children}
+          <Toaster />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
