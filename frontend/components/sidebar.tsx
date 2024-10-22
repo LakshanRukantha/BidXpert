@@ -59,6 +59,8 @@ import {
 } from "@/components/ui/sidebar";
 import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 function getFirstLetters(input: string) {
   const words = input.split(" ");
@@ -66,7 +68,7 @@ function getFirstLetters(input: string) {
   return firstLetters[0] + firstLetters[1];
 }
 
-const IS_LOGGED_IN = true;
+const IS_LOGGED_IN = false;
 const IS_ADMIN = false;
 
 // Mock data for database emulation
@@ -199,11 +201,13 @@ const navItems = IS_LOGGED_IN
     : data.navUserProtected
   : data.navMain;
 
-export default function Page({
+export default function SideBar({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathName = usePathname();
+
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">
@@ -372,12 +376,16 @@ export default function Page({
           </SidebarFooter>
         ) : (
           <SidebarFooter className="flex flex-row gap-2">
-            <Button className="flex-1" size={"sm"}>
-              Sign Up
-            </Button>
-            <Button className="flex-1" size={"sm"} variant={"secondary"}>
-              Sign In
-            </Button>
+            <Link className="flex-1" href="/signup">
+              <Button className="w-full" size={"sm"}>
+                Sign Up
+              </Button>
+            </Link>
+            <Link className="flex-1" href="/signin">
+              <Button className="w-full" size={"sm"} variant={"secondary"}>
+                Sign In
+              </Button>
+            </Link>
           </SidebarFooter>
         )}
       </Sidebar>
@@ -391,7 +399,9 @@ export default function Page({
                 <BreadcrumbList>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Live Auctions</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      {pathName.toUpperCase().split("/")}
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
