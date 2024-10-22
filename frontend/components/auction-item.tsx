@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -9,13 +10,42 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-import { Pencil, Trash, CalendarDays } from "lucide-react";
+import { Pencil, Trash, CalendarDays, CalendarIcon, Save } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Separator } from "@radix-ui/react-separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { cn } from "@/lib/utils";
+import { Textarea } from "./ui/textarea";
 
 export default function AuctionItem() {
   const { toast } = useToast();
+  const [date, setDate] = useState<Date>();
+
   return (
     <Card className="p-2 max-w-72 w-full">
       <CardHeader>
@@ -67,9 +97,99 @@ export default function AuctionItem() {
         <Button variant={"destructive"} size={"icon"}>
           <Trash />
         </Button>
-        <Button size={"icon"} variant={"outline"}>
-          <Pencil />
-        </Button>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button size={"icon"} variant={"outline"}>
+              <Pencil />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Auction Item</DialogTitle>
+              <DialogDescription>
+                Make changes to your auction item here. Click save when you are
+                done.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid py-4">
+              <Label htmlFor="title" className="mb-1">
+                Title
+              </Label>
+              <Input
+                id="title"
+                name="title"
+                placeholder="Enter Title"
+                className="mb-2"
+              />
+              <Label htmlFor="description" className="mb-1">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Enter description"
+                className="mb-2"
+              />
+              <Label htmlFor="startingBid" className="mb-1">
+                Starting Bid
+              </Label>
+              <Input
+                id="startingBid"
+                name="startingBid"
+                type="number"
+                placeholder="Enter starting bid amount..."
+                className="mb-2"
+              />
+              <Label htmlFor="status" className="mb-1">
+                Status
+              </Label>
+              <Select onValueChange={() => console.log("Value")}>
+                <SelectTrigger className="flex-auto w-full mb-2">
+                  <SelectValue placeholder="Change Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="open">Open</SelectItem>
+                    <SelectItem value="close">Close</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              <Label htmlFor="end-date" className="mb-1">
+                End Date
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <DialogFooter>
+              <Button type="submit">
+                <Save />
+                Save changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <Button
           className="w-full flex-1"
           onClick={() => {
