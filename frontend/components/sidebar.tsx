@@ -60,6 +60,7 @@ import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 function getFirstLetters(input: string) {
   const words = input.split(" ");
@@ -206,7 +207,7 @@ export default function SideBar({
   children: React.ReactNode;
 }>) {
   const pathName = usePathname();
-
+  const session = useSession();
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">
@@ -274,6 +275,14 @@ export default function SideBar({
             </SidebarMenu>
           </SidebarGroup>
           <Separator />
+          {session && session.data?.user && (
+            <div>
+              <p>ID: {session.data.user.id}</p>
+              <p>Email: {session.data.user.email}</p>
+              <p>Name: {session.data.user.name}</p>
+              <p>Role: {session.data.user.role}</p>
+            </div>
+          )}
           <SidebarGroup className="mt-auto">
             <SidebarGroupContent>
               <SidebarMenu>

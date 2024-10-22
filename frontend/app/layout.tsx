@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import SidebarComponent from "@/components/sidebar";
 import { Toaster } from "@/components/ui/toaster";
+import AuthProvider from "@/lib/AuthProvider";
 
 export const metadata: Metadata = {
   title: "BidXpert | Smart & Efficient Online Bidding Platform",
@@ -15,18 +16,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SidebarComponent>{children}</SidebarComponent>
-          <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang="en">
+        <body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <SidebarComponent>{children}</SidebarComponent>
+            <Toaster />
+          </ThemeProvider>
+        </body>
+      </html>
+    </AuthProvider>
   );
 }
