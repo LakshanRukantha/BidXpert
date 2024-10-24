@@ -163,6 +163,9 @@ const CreateAuction = () => {
                   width={400}
                   height={200}
                   value={file}
+                  dropzoneOptions={{
+                    maxSize: 1024 * 1024 * 1, // 1MB
+                  }}
                   onChange={(file) => {
                     setFile(file);
                   }}
@@ -176,7 +179,7 @@ const CreateAuction = () => {
                 <Button
                   onClick={async () => {
                     if (file) {
-                      const res = await edgestore.publicFiles.upload({
+                      const res = await edgestore.auctionImages.upload({
                         file,
                         onProgressChange: (progress) => {
                           setProgress(progress);
