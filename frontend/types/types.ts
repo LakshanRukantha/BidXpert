@@ -14,7 +14,7 @@ export type SignInInputs = {
 export type AuctionInputs = {
   title: string;
   category: string;
-  image: string | FileList;
+  image: string;
   description: string;
   price: number;
   end_date: Date;

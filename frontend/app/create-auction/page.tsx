@@ -12,7 +12,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { BadgePlus, CalendarIcon, CircleAlert } from "lucide-react";
+import { BadgePlus, CalendarIcon, CircleAlert, ImageUp } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { SingleImageDropzone } from "@/components/image-dropzone";
+import { useEdgeStore } from "@/lib/edgestore";
+import { Progress } from "@/components/ui/progress";
 
 const CreateAuction = () => {
   const toast = useToast().toast;
@@ -36,7 +47,7 @@ const CreateAuction = () => {
     defaultValues: {
       title: "",
       category: "",
-      image: undefined,
+      image: "",
       description: "",
       price: 0,
       end_date: undefined,
@@ -44,17 +55,24 @@ const CreateAuction = () => {
     mode: "onTouched",
     resolver: yupResolver(auctionValidationSchema),
   });
+
   const { register, handleSubmit, reset, setValue, formState } = form;
   const { errors, isSubmitting, isSubmitSuccessful } = formState;
+
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [open, setOpen] = React.useState(false);
+  const [file, setFile] = useState<File>();
+  const [progress, setProgress] = useState(0);
+  const [url, setUrl] = useState<string>("");
+  const { edgestore } = useEdgeStore();
 
   // Reset Form
   useEffect(() => {
     if (isSubmitSuccessful) {
       reset();
+      setUrl("");
     }
   }, [isSubmitSuccessful, reset]);
-
-  const [date, setDate] = useState<Date | undefined>(undefined);
 
   const onSubmit = async (data: AuctionInputs) => {
     // Handle form submission here (e.g., sending data to the server)
@@ -122,14 +140,71 @@ const CreateAuction = () => {
             </p>
           )}
           <Label className="text-sm mb-1 mt-2">Image</Label>
-          <Input
-            type="file"
-            accept="image/*"
-            placeholder="Upload item image"
-            className={`${errors.image ? "border-red-500" : "border-input"}`}
-            {...register("image")}
-            disabled={isSubmitting}
-          />
+          <div className="flex flex-row items-center gap-2">
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className={`flex-auto ${!url && "w-full"} ${
+                    errors.description ? "border-red-500" : "border-input"
+                  }`}
+                  variant={"outline"}
+                >
+                  <ImageUp /> Upload Image
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-fit">
+                <DialogHeader>
+                  <DialogTitle>Upload Image</DialogTitle>
+                  <DialogDescription>
+                    Upload auction image here
+                  </DialogDescription>
+                </DialogHeader>
+                <SingleImageDropzone
+                  width={400}
+                  height={200}
+                  value={file}
+                  onChange={(file) => {
+                    setFile(file);
+                  }}
+                />
+                {url === "" && (
+                  <div className="flex flex-row items-center gap-2 justify-between">
+                    <Progress value={progress} />
+                    <span>{`${progress}%`}</span>
+                  </div>
+                )}
+                <Button
+                  onClick={async () => {
+                    if (file) {
+                      const res = await edgestore.publicFiles.upload({
+                        file,
+                        onProgressChange: (progress) => {
+                          setProgress(progress);
+                        },
+                      });
+                      // Server actions here
+                      console.log(res);
+                      setUrl(res.url);
+                      setValue("image", res.url, {
+                        shouldValidate: true,
+                      });
+                    }
+                  }}
+                  className="w-full"
+                >
+                  Upload
+                </Button>
+              </DialogContent>
+            </Dialog>
+            <Input
+              type="text"
+              value={url && url}
+              placeholder="This will be automatically filled"
+              className={`hidden ${url && "block flex-auto"}`}
+              {...register("image")}
+              disabled={true}
+            />
+          </div>
           {errors.image && (
             <p className="flex items-center gap-1 text-xs text-red-500">
               <CircleAlert className="w-4" />
