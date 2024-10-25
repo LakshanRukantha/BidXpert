@@ -19,3 +19,22 @@ export type AuctionInputs = {
   price: number;
   end_date: Date;
 };
+
+export type AuctionMailParameters = {
+  auctionListerName: string;
+  auctionListerEmail: string;
+  bidderName: string;
+  bidderEmail: string;
+  itemId: number;
+  itemName: string;
+  bidAmount: number;
+  expiresOn: Date;
+};
+
+export type MailOptions = {
+  from: string;
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+}

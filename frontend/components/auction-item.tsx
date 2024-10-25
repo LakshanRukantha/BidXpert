@@ -41,10 +41,12 @@ import {
 } from "./ui/select";
 import { cn } from "@/lib/utils";
 import { Textarea } from "./ui/textarea";
+import sendEmailNotification from "@/lib/bid-mail-sender";
 
 export default function AuctionItem() {
   const { toast } = useToast();
   const [date, setDate] = useState<Date>();
+  const [bidAmount, setBidAmount] = useState<number>(0);
 
   return (
     <Card className="p-2 max-w-72 w-full">
@@ -86,10 +88,25 @@ export default function AuctionItem() {
           <h3>Starting Bid: 1500</h3>
         </div>
         <div className="flex flex-row gap-2">
-          <Input placeholder="Enter Bid Amount" type="number" />
+          <Input
+            placeholder="Enter Bid Amount"
+            onChange={(e) => setBidAmount(Number(e.target.value))}
+            type="number"
+            value={bidAmount}
+          />
           <div className="flex flex-row gap-2">
-            <Button variant={"secondary"}>-500</Button>
-            <Button variant={"secondary"}>+500</Button>
+            <Button
+              onClick={() => bidAmount > 0 && setBidAmount(bidAmount - 500)}
+              variant={"secondary"}
+            >
+              -500
+            </Button>
+            <Button
+              onClick={() => setBidAmount(bidAmount + 500)}
+              variant={"secondary"}
+            >
+              +500
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -192,13 +209,22 @@ export default function AuctionItem() {
 
         <Button
           className="w-full flex-1"
-          onClick={() => {
+          onClick={async () => {
             toast({
               variant: "default",
               title: "This is a title",
               description: "This is a description",
             });
-            console.log("Bid placed");
+            await sendEmailNotification({
+              auctionListerEmail: "rukanthalakshan@gmail.com",
+              auctionListerName: "Lakshan Rukantha",
+              bidderEmail: "test@gmail.com",
+              bidderName: "Test User",
+              expiresOn: new Date(),
+              itemId: 5,
+              itemName: "iPhone 16 Pro Max",
+              bidAmount: bidAmount,
+            });
           }}
         >
           Place Bid
