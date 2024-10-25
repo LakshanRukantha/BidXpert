@@ -66,7 +66,7 @@ export default function AuctionItem() {
           </h3>
         </div>
         <Image
-          src="/favicon.ico"
+          src="/images/no-image.png"
           width={300}
           height={200}
           className="bg-secondary p-2 aspect-video mb-2 rounded-md"
