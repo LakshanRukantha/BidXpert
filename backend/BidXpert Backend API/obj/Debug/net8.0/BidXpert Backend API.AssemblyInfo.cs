@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BidXpert Backend API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2435bbb6a0464102abed74818a03b2a773714938")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1d9e3d6033302983b62d89f3c7c222220239a314")]
 [assembly: System.Reflection.AssemblyProductAttribute("BidXpert Backend API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BidXpert Backend API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
