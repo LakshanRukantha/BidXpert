@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lakshan\\Projects\\Next.js Projects\\bidxpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj": {}
+    "C:\\Users\\USER\\Desktop\\BidXpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lakshan\\Projects\\Next.js Projects\\bidxpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj": {
+    "C:\\Users\\USER\\Desktop\\BidXpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lakshan\\Projects\\Next.js Projects\\bidxpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj",
+        "projectUniqueName": "C:\\Users\\USER\\Desktop\\BidXpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj",
         "projectName": "BidXpert Backend API",
-        "projectPath": "C:\\Users\\Lakshan\\Projects\\Next.js Projects\\bidxpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj",
-        "packagesPath": "C:\\Users\\Lakshan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Lakshan\\Projects\\Next.js Projects\\bidxpert\\backend\\BidXpert Backend API\\obj\\",
+        "projectPath": "C:\\Users\\USER\\Desktop\\BidXpert\\backend\\BidXpert Backend API\\BidXpert Backend API.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USER\\Desktop\\BidXpert\\backend\\BidXpert Backend API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Lakshan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,7 +22,6 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -49,6 +48,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.8.6, )"
             }
           },
           "imports": [
@@ -70,7 +73,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.403/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
