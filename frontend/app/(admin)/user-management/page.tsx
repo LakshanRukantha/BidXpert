@@ -37,12 +37,17 @@ import { Label } from "@/components/ui/label";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
+  const [editUser, setEditUser] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    type: string;
+  }>({ firstName: "", lastName: "", email: "", type: "" });
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
     setLoading(true);
     axios.get("https://localhost:7174/api/user/all").then((res) => {
       const { data } = res.data;
-      console.log(data[0]);
       setUsers(data);
       setLoading(false);
     });
@@ -91,6 +96,7 @@ const UserManagement = () => {
                 firstname: string;
                 lastname: string;
                 regDate: string;
+                isAdmin: string;
               }) => (
                 <TableRow key={user.userId}>
                   <TableCell className="font-medium">{user.userId}</TableCell>
@@ -102,7 +108,17 @@ const UserManagement = () => {
                   <TableCell className="flex items-center gap-2 justify-end">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant={"secondary"}>
+                        <Button
+                          variant={"secondary"}
+                          onClick={() =>
+                            setEditUser({
+                              firstName: "",
+                              lastName: "",
+                              email: "",
+                              type: "",
+                            })
+                          }
+                        >
                           <Pencil />
                           <span className="hidden lg:block"> Edit</span>
                         </Button>
@@ -121,6 +137,13 @@ const UserManagement = () => {
                           </Label>
                           <Input
                             id="fName"
+                            defaultValue={user.firstname}
+                            onChange={(e) =>
+                              setEditUser((prevUser) => ({
+                                ...prevUser,
+                                firstName: e.target.value,
+                              }))
+                            }
                             name="fName"
                             placeholder="Enter user's first name"
                             className="mb-2"
@@ -130,6 +153,13 @@ const UserManagement = () => {
                           </Label>
                           <Input
                             id="lName"
+                            defaultValue={user.lastname}
+                            onChange={(e) =>
+                              setEditUser((prevUser) => ({
+                                ...prevUser,
+                                lastName: e.target.value,
+                              }))
+                            }
                             name="lName"
                             placeholder="Enter user's last name"
                             className="mb-2"
@@ -139,6 +169,13 @@ const UserManagement = () => {
                           </Label>
                           <Input
                             id="email"
+                            defaultValue={user.email}
+                            onChange={(e) =>
+                              setEditUser((prevUser) => ({
+                                ...prevUser,
+                                email: e.target.value,
+                              }))
+                            }
                             name="email"
                             placeholder="Enter email address"
                             className="mb-2"
@@ -146,7 +183,15 @@ const UserManagement = () => {
                           <Label htmlFor="type" className="mb-1">
                             Type
                           </Label>
-                          <Select onValueChange={(e) => console.log(e)}>
+                          <Select
+                            defaultValue={user.isAdmin ? "admin" : "standard"}
+                            onValueChange={(e) =>
+                              setEditUser((prevUser) => ({
+                                ...prevUser,
+                                type: e,
+                              }))
+                            }
+                          >
                             <SelectTrigger className="flex-auto w-full mb-2">
                               <SelectValue placeholder="Change User Type" />
                             </SelectTrigger>
@@ -161,7 +206,10 @@ const UserManagement = () => {
                           </Select>
                         </div>
                         <DialogFooter>
-                          <Button type="submit">
+                          <Button
+                            type="submit"
+                            onClick={() => console.log(editUser)}
+                          >
                             <Save />
                             Save changes
                           </Button>
