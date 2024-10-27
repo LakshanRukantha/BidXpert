@@ -29,7 +29,7 @@ namespace BidXpert_Backend_API.Controllers
             List<User> userList = new List<User>();
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
             {
-                SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM [User]", con);
+                SqlDataAdapter da = new SqlDataAdapter("SELECT User_id, Firstname,Lastname,Email,Reg_date,Is_admin FROM [User];", con);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
 
@@ -98,26 +98,30 @@ namespace BidXpert_Backend_API.Controllers
             if (string.IsNullOrWhiteSpace(user.Firstname) ||
                 string.IsNullOrWhiteSpace(user.Lastname) ||
                 string.IsNullOrWhiteSpace(user.Email) ||
-                string.IsNullOrWhiteSpace(user.Password))
+                string.IsNullOrWhiteSpace(user.Password) )
             {
                 return BadRequest(new Response { status = 400, message = "All fields are required." });
             }
 
             try
+                
             {
                 using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
                 {
-                    string query = "INSERT INTO [User] (Firstname, Lastname, Email, Password) VALUES (@Firstname, @Lastname, @Email, @Password)";
+                    string query = "INSERT INTO [User] (Firstname, Lastname, Email, Password,Reg_date,Is_admin) VALUES (@Firstname, @Lastname, @Email, @Password, @Reg_date, @Is_admin)";
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         cmd.Parameters.AddWithValue("@Firstname", user.Firstname);
                         cmd.Parameters.AddWithValue("@Lastname", user.Lastname);
                         cmd.Parameters.AddWithValue("@Email", user.Email);
-                        cmd.Parameters.AddWithValue("@Password", user.Password); 
+                        cmd.Parameters.AddWithValue("@Password", user.Password);
+                        cmd.Parameters.AddWithValue("@Reg_date", user.RegDate);
+                        cmd.Parameters.AddWithValue("@Is_admin", user.IsAdmin);
+
 
                         con.Open();
-                        int result = await cmd.ExecuteNonQueryAsync();
+                        int result = await cmd.ExecuteNonQueryAsync(); 
 
                         if (result > 0)
                         {
