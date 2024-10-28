@@ -48,18 +48,29 @@ const BidListCard = ({
                 <Trash />
               </Button>
             </>
-          ) : (
-            <Button
-              variant={"default"}
-              size={"sm"}
-              disabled={isClaimed}
-              onClick={() =>
-                console.log(title + " Claim Sucessful at " + new Date())
-              }
-            >
-              {isClaimed ? "" : <Gift />}
-              {isClaimed ? "Claimed" : "Claim Now"}
+          ) : isClaimed ? (
+            <Button variant={"default"} size={"sm"} disabled>
+              Claimed
             </Button>
+          ) : (
+            <Link
+              href={{
+                pathname: "/checkout",
+                query: { title: title, amount: amount },
+              }}
+            >
+              <Button
+                variant={"default"}
+                size={"sm"}
+                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={() =>
+                  console.log(title + " Claim Successful at " + new Date())
+                }
+              >
+                <Gift />
+                Claim Now
+              </Button>
+            </Link>
           )}
         </div>
       </div>

@@ -8,7 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import convertToSubcurrency from "@/lib/ConvertToSubCurrency";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
   throw new Error("NEXT_PUBLIC_STRIPE_PUBLIC_KEY is not defined");
@@ -16,16 +17,35 @@ if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 const Checkout = () => {
-    
-  const amount = 49.99;
+  const router = useRouter();
+  const searchPageParams = useSearchParams();
+  const [transactionInfo, setTransactionInfo] = useState({
+    title: "",
+    amount: 0,
+    date: new Date(),
+  });
+  const title = searchPageParams.get("title");
+  const amount = Math.max(Number(searchPageParams.get("amount")), 0);
+
+  if (amount <= 0) {
+    router.push("/404");
+  }
+
+  useEffect(() => {
+    setTransactionInfo({
+      title: title as string,
+      amount: amount,
+      date: new Date(),
+    });
+  }, [title, amount]);
 
   return (
     <div className=" w-full flex lg:items-center justify-center lg:min-h-full">
       <Card className="p-4 lg:-mt-12 flex flex-col max-w-4xl w-full lg:flex-row gap-4 lg:gap-2">
         <div className="flex flex-col flex-1">
           <h2 className="text-xl font-bold mb-2">Order Details</h2>
-          <Label className="text-base">Product: iPhone 15 Pro Max</Label>
-          <Label className="text-base">Amount: ${amount}</Label>
+          <Label className="text-base">Product: {transactionInfo.title}</Label>
+          <Label className="text-base">Amount: ${transactionInfo.amount}</Label>
           <Separator className="my-2" />
           <div>
             <Label>Address</Label>
@@ -52,11 +72,11 @@ const Checkout = () => {
             stripe={stripePromise}
             options={{
               mode: "payment",
-              amount: convertToSubcurrency(amount),
+              amount: convertToSubcurrency(transactionInfo.amount),
               currency: "usd",
             }}
           >
-            <CheckoutForm amount={amount} />
+            <CheckoutForm transactionProps={transactionInfo} />
           </Elements>
         </div>
       </Card>
