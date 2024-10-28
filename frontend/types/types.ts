@@ -37,4 +37,12 @@ export type MailOptions = {
   subject: string;
   html: string;
   text: string;
-}
+};
+
+export type CheckoutFormProps = {
+  transactionProps: {
+    title: string;
+    amount: number;
+    date: Date;
+  };
+};
