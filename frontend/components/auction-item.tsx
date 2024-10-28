@@ -42,8 +42,23 @@ import {
 import { cn } from "@/lib/utils";
 import { Textarea } from "./ui/textarea";
 import sendEmailNotification from "@/lib/bid-mail-sender";
+import { AuctionItemProps } from "@/types/types";
 
-export default function AuctionItem() {
+export default function AuctionItem({
+  name,
+  description,
+  end_date,
+  start_bid,
+  auction_id,
+  categoryName,
+  userName,
+  category_id,
+  high_bid,
+  image_url,
+  listed_on,
+  status,
+  user_id,
+}: AuctionItemProps) {
   const { toast } = useToast();
   const [date, setDate] = useState<Date>();
   const [bidAmount, setBidAmount] = useState<number>(0);
@@ -52,40 +67,38 @@ export default function AuctionItem() {
     <Card className="p-2 max-w-72 w-full">
       <CardHeader>
         <CardTitle className="text-ellipsis line-clamp-1">
-          Auction Item shdf iugfi iusegf uief
+          {name || ""}
         </CardTitle>
         <hr />
       </CardHeader>
       <CardContent>
         <div className="flex flex-row justify-between mb-2">
-          <h3 className="to-slate-500 float-end">By Janith</h3>
+          <h3 className="to-slate-500 float-end">By {userName}</h3>
           <Separator orientation="vertical" className="bg-secondary w-[2px]" />
           <h3 className="to-slate-500 float-end flex flex-row items-center">
             <CalendarDays className="w-4 mr-1" />
-            Ends in 2h:05m:40s
+            Ends in {format(new Date(end_date), "dd/MM/yyyy")}
           </h3>
         </div>
         <Image
-          src="/images/no-image.png"
+          src={`${image_url || "/images/no-image.png"}`}
           width={300}
           height={200}
           className="bg-secondary p-2 aspect-video mb-2 rounded-md"
           alt="Auction Image"
         />
         <p className="line-clamp-2 mb-1 text-slate-500 text-ellipsis">
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Labore,
-          vero. Aspernatur at ipsam voluptas vitae aliquam animi repellendus,
-          maxime a, reiciendis, unde optio!
+          {description || ""}
         </p>
         <div className="bg-secondary p-1 px-2 rounded-md mb-2">
           <div className="flex flex-row gap-2 items-center">
-            <h3 className="flex-1 text-nowrap">Current Bid: 1500</h3>
+            <h3 className="flex-1 text-nowrap">Current Bid: {high_bid}</h3>
             <h3 className="line-clamp-1 text-sm text-slate-500">
               By L. Rukantha
             </h3>
           </div>
           <hr className="bg-slate-800" />
-          <h3>Starting Bid: 1500</h3>
+          <h3>Starting Bid: {start_bid}</h3>
         </div>
         <div className="flex flex-row gap-2">
           <Input
@@ -220,9 +233,9 @@ export default function AuctionItem() {
               auctionListerName: "Lakshan Rukantha",
               bidderEmail: "test@gmail.com",
               bidderName: "Test User",
-              expiresOn: new Date(),
-              itemId: 5,
-              itemName: "iPhone 16 Pro Max",
+              expiresOn: new Date(end_date),
+              itemId: auction_id,
+              itemName: name,
               bidAmount: bidAmount,
             });
           }}

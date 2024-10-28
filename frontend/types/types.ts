@@ -37,4 +37,20 @@ export type MailOptions = {
   subject: string;
   html: string;
   text: string;
-}
+};
+
+export type AuctionItemProps = {
+  auction_id: number;
+  name: string;
+  description: string;
+  end_date: string;
+  start_bid: number;
+  high_bid: number;
+  image_url: string;
+  listed_on: string;
+  status: string;
+  user_id: number;
+  category_id: number;
+  userName: string;
+  categoryName: string;
+};

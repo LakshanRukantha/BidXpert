@@ -13,9 +13,20 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import * as React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { AuctionItemProps } from "@/types/types";
 
 export default function Home() {
+  const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
+  useEffect(() => {
+    axios.get("https://localhost:7174/api/auction/all").then((res) => {
+      const { data } = res.data;
+      setAuctions(data);
+      console.log(data);
+    });
+  }, []);
+
   return (
     <div className="flex items-center flex-col">
       <div className="flex flex-col lg:flex-row gap-2 w-full mb-4">
@@ -40,12 +51,26 @@ export default function Home() {
         </Button>
       </div>
       <div className="grid w-full gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
+        {auctions.map((auction) => {
+          return (
+            <AuctionItem
+              key={auction.auction_id}
+              name={auction.name}
+              description={auction.description}
+              end_date={auction.end_date}
+              start_bid={auction.start_bid}
+              auction_id={auction.auction_id}
+              categoryName={auction.categoryName}
+              category_id={auction.category_id}
+              high_bid={auction.high_bid}
+              image_url={""}
+              listed_on={auction.listed_on}
+              status={auction.status}
+              userName={auction.userName}
+              user_id={auction.user_id}
+            />
+          );
+        })}
       </div>
     </div>
   );
