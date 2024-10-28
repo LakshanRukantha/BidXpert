@@ -141,13 +141,171 @@ namespace BidXpert_Backend_API.Controllers
                 var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
                 return StatusCode(500, response);
             }
+
         }
 
 
+        [HttpPost]
+        [Route("signin")]
+        public async Task<IActionResult> SignInUser([FromBody] User user)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+                {
+
+                    string query = "SELECT User_id, Email, Password FROM [User] WHERE Email = @Email";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@Email", user.Email);
+
+                        con.Open();
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            if (reader.Read())
+                            {
+                                int userId = reader.GetInt32(0);
+                                string email = reader.GetString(1);
+                                string password = reader.GetString(2);
+
+                                var response = new
+                                {
+                                    UserId = userId,
+                                    Email = email,
+                                    Password = password
+                                };
+
+                                return Ok(response);
+                            }
+                            else
+                            {
+                                var response = new Response { status = 404, message = "User not found." };
+                                return NotFound(response);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
+                return StatusCode(500, response);
+            }
+        }
 
 
-        
-       
+        [HttpPut]
+        [Route("update{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
+        {
+
+            if (user.UserId != id)
+            {
+                return BadRequest(new Response { status = 400, message = "User ID in the body must match the ID in the URL." });
+            }
+
+
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                return BadRequest(new Response { status = 400, message = "The Email field is required." });
+            }
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+                {
+                    var updates = new List<string>();
+                    var parameters = new List<SqlParameter>();
+
+                    if (!string.IsNullOrWhiteSpace(user.Firstname))
+                    {
+                        updates.Add("Firstname = @Firstname");
+                        parameters.Add(new SqlParameter("@Firstname", user.Firstname));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(user.Lastname))
+                    {
+                        updates.Add("Lastname = @Lastname");
+                        parameters.Add(new SqlParameter("@Lastname", user.Lastname));
+                    }
+
+
+                    updates.Add("Email = @Email");
+                    parameters.Add(new SqlParameter("@Email", user.Email));
+
+                    if (updates.Count == 0)
+                    {
+                        return BadRequest(new Response { status = 400, message = "At least one field must be updated." });
+                    }
+
+                    string query = $"UPDATE [User] SET {string.Join(", ", updates)} WHERE User_id = @UserId";
+                    parameters.Add(new SqlParameter("@UserId", user.UserId));
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddRange(parameters.ToArray());
+
+                        con.Open();
+                        int result = await cmd.ExecuteNonQueryAsync();
+
+                        if (result > 0)
+                        {
+                            var response = new Response { status = 200, message = "User updated successfully." };
+                            return Ok(response);
+                        }
+                        else
+                        {
+                            var response = new Response { status = 404, message = "User not found or no updates made." };
+                            return NotFound(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
+                return StatusCode(500, response);
+            }
+        }
+
+
+        [HttpDelete]
+        [Route("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+                {
+                    string query = "DELETE FROM [User] WHERE User_id = @UserId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@UserId", id);
+
+                        con.Open();
+                        int result = await cmd.ExecuteNonQueryAsync();
+
+                        if (result > 0)
+                        {
+                            var response = new Response { status = 200, message = "User deleted successfully." };
+                            return Ok(response);
+                        }
+                        else
+                        {
+                            var response = new Response { status = 404, message = "User not found." };
+                            return NotFound(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
+                return StatusCode(500, response);
+            }
+        }
     }
 
 
