@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CircleAlert } from "lucide-react";
 import signUpValidationSchema from "@/schemas/SignUpValidationSchema";
 import axios from "axios";
+import bcrypt from "bcryptjs";
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -38,12 +39,15 @@ const SignUp = () => {
   const { errors, isSubmitting } = formState;
 
   const onSubmit: SubmitHandler<RegistrationInputs> = async (data) => {
+    // Hash the password before sending it to the backend
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    data.password = hashedPassword;
     try {
       const response = await axios.post(`${backendUrl}/api/user/signup`, {
         firstname: data.f_name,
         lastname: data.l_name,
         email: data.email,
-        password: data.password,
+        password: hashedPassword,
         regDate: new Date(),
         isAdmin: false,
       });
