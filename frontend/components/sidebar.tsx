@@ -63,6 +63,7 @@ import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { getFirstLetters } from "@/lib/utils";
 import NotificationsPopup from "./notifications-popup";
+import TransactionsPopup from "./transactions-popup";
 
 // Mock data for database emulation
 const categories = [
@@ -349,14 +350,12 @@ export default function SideBar({
                         <BadgeCheck />
                         Account
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          router.push("/transactions");
-                        }}
-                      >
-                        <CreditCard />
-                        Transactions
-                      </DropdownMenuItem>
+                      <TransactionsPopup user_id={"1"}>
+                        <DropdownMenuItem>
+                          <CreditCard />
+                          Transactions
+                        </DropdownMenuItem>
+                      </TransactionsPopup>
                       <NotificationsPopup user_id={"1"}>
                         <DropdownMenuItem>
                           <Bell />
