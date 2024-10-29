@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "./ui/textarea";
 import sendEmailNotification from "@/lib/bid-mail-sender";
 import { AuctionItemProps } from "@/types/types";
+import { useSession } from "next-auth/react";
 
 export default function AuctionItem({
   name,
@@ -50,19 +51,15 @@ export default function AuctionItem({
   end_date,
   start_bid,
   auction_id,
-  categoryName,
   userName,
-  category_id,
   high_bid,
   image_url,
-  listed_on,
-  status,
   user_id,
 }: AuctionItemProps) {
+  const session = useSession();
   const { toast } = useToast();
   const [date, setDate] = useState<Date>();
-  const [bidAmount, setBidAmount] = useState<number>(0);
-
+  const [bidAmount, setBidAmount] = useState<number>(high_bid);
   return (
     <Card className="p-2 max-w-72 w-full">
       <CardHeader>
@@ -81,7 +78,7 @@ export default function AuctionItem({
           </h3>
         </div>
         <Image
-          src={`${image_url || "/images/no-image.png"}`}
+          src={`${image_url}`}
           width={300}
           height={200}
           className="bg-secondary p-2 aspect-video mb-2 rounded-md"
@@ -103,13 +100,18 @@ export default function AuctionItem({
         <div className="flex flex-row gap-2">
           <Input
             placeholder="Enter Bid Amount"
+            min={high_bid}
             onChange={(e) => setBidAmount(Number(e.target.value))}
             type="number"
             value={bidAmount}
           />
           <div className="flex flex-row gap-2">
             <Button
-              onClick={() => bidAmount > 0 && setBidAmount(bidAmount - 500)}
+              onClick={() => {
+                if (bidAmount - 500 >= high_bid) {
+                  setBidAmount(bidAmount - 500);
+                }
+              }}
               variant={"secondary"}
             >
               -500
@@ -124,101 +126,105 @@ export default function AuctionItem({
         </div>
       </CardContent>
       <CardFooter className="flex flex-row gap-2">
-        <Button variant={"destructive"} size={"icon"}>
-          <Trash />
-        </Button>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button size={"icon"} variant={"outline"}>
-              <Pencil />
+        {user_id === session.data?.user?.id && (
+          <>
+            <Button variant={"destructive"} size={"icon"}>
+              <Trash />
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Edit Auction Item</DialogTitle>
-              <DialogDescription>
-                Make changes to your auction item here. Click save when you are
-                done.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid py-4">
-              <Label htmlFor="title" className="mb-1">
-                Title
-              </Label>
-              <Input
-                id="title"
-                name="title"
-                placeholder="Enter Title"
-                className="mb-2"
-              />
-              <Label htmlFor="description" className="mb-1">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                name="description"
-                placeholder="Enter description"
-                className="mb-2"
-              />
-              <Label htmlFor="startingBid" className="mb-1">
-                Starting Bid
-              </Label>
-              <Input
-                id="startingBid"
-                name="startingBid"
-                type="number"
-                placeholder="Enter starting bid amount..."
-                className="mb-2"
-              />
-              <Label htmlFor="status" className="mb-1">
-                Status
-              </Label>
-              <Select onValueChange={() => console.log("Value")}>
-                <SelectTrigger className="flex-auto w-full mb-2">
-                  <SelectValue placeholder="Change Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="close">Close</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-              <Label htmlFor="end-date" className="mb-1">
-                End Date
-              </Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size={"icon"} variant={"outline"}>
+                  <Pencil />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Auction Item</DialogTitle>
+                  <DialogDescription>
+                    Make changes to your auction item here. Click save when you
+                    are done.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid py-4">
+                  <Label htmlFor="title" className="mb-1">
+                    Title
+                  </Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    placeholder="Enter Title"
+                    className="mb-2"
                   />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <DialogFooter>
-              <Button type="submit">
-                <Save />
-                Save changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+                  <Label htmlFor="description" className="mb-1">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    placeholder="Enter description"
+                    className="mb-2"
+                  />
+                  <Label htmlFor="startingBid" className="mb-1">
+                    Starting Bid
+                  </Label>
+                  <Input
+                    id="startingBid"
+                    name="startingBid"
+                    type="number"
+                    placeholder="Enter starting bid amount..."
+                    className="mb-2"
+                  />
+                  <Label htmlFor="status" className="mb-1">
+                    Status
+                  </Label>
+                  <Select onValueChange={() => console.log("Value")}>
+                    <SelectTrigger className="flex-auto w-full mb-2">
+                      <SelectValue placeholder="Change Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="close">Close</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <Label htmlFor="end-date" className="mb-1">
+                    End Date
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">
+                    <Save />
+                    Save changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
 
         <Button
           className="w-full flex-1"

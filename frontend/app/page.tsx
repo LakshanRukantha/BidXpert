@@ -63,7 +63,7 @@ export default function Home() {
               categoryName={auction.categoryName}
               category_id={auction.category_id}
               high_bid={auction.high_bid}
-              image_url={""}
+              image_url={auction.image_url}
               listed_on={auction.listed_on}
               status={auction.status}
               userName={auction.userName}
