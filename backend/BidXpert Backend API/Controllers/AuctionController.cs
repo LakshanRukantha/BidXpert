@@ -28,7 +28,7 @@ public async Task<IActionResult> GetAllAuctions()
 
     using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
     {
-        string query = "SELECT a.*, u.Firstname AS ListerName FROM Auction a " +
+        string query = "SELECT a.*, u.Firstname AS ListerName,c.Name AS CategoryName FROM Auction a " +
                        "JOIN [User] u ON a.User_id = u.User_id " +
                        "JOIN Category c ON a.Category_id = c.Category_id";
 
@@ -49,10 +49,10 @@ public async Task<IActionResult> GetAllAuctions()
                 Listed_on = Convert.ToDateTime(row["Listed_on"]),
                 End_date = Convert.ToDateTime(row["End_date"]),
                 Status = row["Status"].ToString(),
-                User_id = Convert.ToInt32(row["User_id"]),
+                Lister_id = Convert.ToInt32(row["User_id"]),
                 Category_id = Convert.ToInt32(row["Category_id"]),
                 ListerName = row["ListerName"].ToString(),
-             
+                CategoryName = row["CategoryName"].ToString()
 
             });
         }
@@ -70,7 +70,7 @@ public async Task<IActionResult> GetAllAuctions()
         {
             if (string.IsNullOrWhiteSpace(auction.Name) ||
                 auction.Start_bid <= 0 ||
-                auction.User_id <= 0 || 
+                auction.Lister_id <= 0 || 
                 auction.Category_id <= 0)
             {
                 return BadRequest(new { status = 400, message = "Invalid auction data." });
@@ -93,7 +93,7 @@ public async Task<IActionResult> GetAllAuctions()
                         cmd.Parameters.AddWithValue("@Listed_on", auction.Listed_on);
                         cmd.Parameters.AddWithValue("@End_date", auction.End_date);
                         cmd.Parameters.AddWithValue("@Status", auction.Status);
-                        cmd.Parameters.AddWithValue("@User_id", auction.User_id);
+                        cmd.Parameters.AddWithValue("@User_id", auction.Lister_id);
                         cmd.Parameters.AddWithValue("@Category_id", auction.Category_id);
 
                         con.Open();
@@ -115,13 +115,13 @@ public async Task<IActionResult> GetAllAuctions()
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuction(int id, [FromBody] Auction auction)
         {
-            // Validate the ID in the route matches the Auction_id in the body
+           
             if (id != auction.Auction_id)
             {
                 return BadRequest(new { status = 400, message = "ID mismatch between URL and request body." });
             }
 
-            // Validate required fields
+           
             if (string.IsNullOrWhiteSpace(auction.Name))
             {
                 return BadRequest(new { status = 400, message = "Auction name is required." });
@@ -130,7 +130,7 @@ public async Task<IActionResult> GetAllAuctions()
             {
                 return BadRequest(new { status = 400, message = "Start bid must be greater than zero." });
             }
-            if (auction.User_id <= 0)
+            if (auction.Lister_id <= 0)
             {
                 return BadRequest(new { status = 400, message = "User ID must be a positive integer." });
             }
@@ -139,7 +139,6 @@ public async Task<IActionResult> GetAllAuctions()
                 return BadRequest(new { status = 400, message = "Category ID must be a positive integer." });
             }
 
-            // Perform the update
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
             {
                 string query = @"UPDATE Auction SET 
@@ -157,7 +156,7 @@ public async Task<IActionResult> GetAllAuctions()
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    // Set parameters with nullable checks
+                   
                     cmd.Parameters.AddWithValue("@Auction_id", id);
                     cmd.Parameters.AddWithValue("@Name", auction.Name);
                     cmd.Parameters.AddWithValue("@Description", auction.Description ?? (object)DBNull.Value);
@@ -167,7 +166,7 @@ public async Task<IActionResult> GetAllAuctions()
                     cmd.Parameters.AddWithValue("@Listed_on", auction.Listed_on);
                     cmd.Parameters.AddWithValue("@End_date", auction.End_date);
                     cmd.Parameters.AddWithValue("@Status", auction.Status ?? (object)DBNull.Value);
-                    cmd.Parameters.AddWithValue("@User_id", auction.User_id);
+                    cmd.Parameters.AddWithValue("@User_id", auction.Lister_id);
                     cmd.Parameters.AddWithValue("@Category_id", auction.Category_id);
 
                     con.Open();

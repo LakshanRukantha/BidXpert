@@ -11,10 +11,10 @@
         public DateTime Listed_on {  get; set; }
         public DateTime End_date { get; set; }
         public string? Status { get; set; }
-        public int User_id { get; set; }
+        public int Lister_id { get; set; }
         public int Category_id { get; set; }
         public string? ListerName { get; set; }
-        
+        public string? CategoryName { get; set; }
 
     }
 }
