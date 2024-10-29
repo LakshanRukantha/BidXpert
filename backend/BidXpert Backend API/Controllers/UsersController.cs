@@ -98,19 +98,32 @@ namespace BidXpert_Backend_API.Controllers
             if (string.IsNullOrWhiteSpace(user.Firstname) ||
                 string.IsNullOrWhiteSpace(user.Lastname) ||
                 string.IsNullOrWhiteSpace(user.Email) ||
-                string.IsNullOrWhiteSpace(user.Password) )
+                string.IsNullOrWhiteSpace(user.Password))
             {
                 return BadRequest(new Response { status = 400, message = "All fields are required." });
             }
 
             try
-                
             {
                 using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
                 {
-                    string query = "INSERT INTO [User] (Firstname, Lastname, Email, Password,Reg_date,Is_admin) VALUES (@Firstname, @Lastname, @Email, @Password, @Reg_date, @Is_admin)";
+                    string checkEmailQuery = "SELECT COUNT(1) FROM [User] WHERE Email = @Email";
+                    using (SqlCommand checkCmd = new SqlCommand(checkEmailQuery, con))
+                    {
+                        checkCmd.Parameters.AddWithValue("@Email", user.Email);
 
-                    using (SqlCommand cmd = new SqlCommand(query, con))
+                        con.Open();
+                        int emailExists = (int)await checkCmd.ExecuteScalarAsync();
+                        con.Close();
+
+                        if (emailExists > 0)
+                        {
+                            return Conflict(new Response { status = 409, message = "User already exists with this email." });
+                        }
+                    }
+
+                    string insertQuery = "INSERT INTO [User] (Firstname, Lastname, Email, Password, Reg_date, Is_admin) VALUES (@Firstname, @Lastname, @Email, @Password, @Reg_date, @Is_admin)";
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, con))
                     {
                         cmd.Parameters.AddWithValue("@Firstname", user.Firstname);
                         cmd.Parameters.AddWithValue("@Lastname", user.Lastname);
@@ -119,9 +132,8 @@ namespace BidXpert_Backend_API.Controllers
                         cmd.Parameters.AddWithValue("@Reg_date", user.RegDate);
                         cmd.Parameters.AddWithValue("@Is_admin", user.IsAdmin);
 
-
                         con.Open();
-                        int result = await cmd.ExecuteNonQueryAsync(); 
+                        int result = await cmd.ExecuteNonQueryAsync();
 
                         if (result > 0)
                         {
@@ -141,7 +153,6 @@ namespace BidXpert_Backend_API.Controllers
                 var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
                 return StatusCode(500, response);
             }
-
         }
 
 
@@ -153,35 +164,35 @@ namespace BidXpert_Backend_API.Controllers
             {
                 using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
                 {
-
-                    string query = "SELECT User_id, Email, Password FROM [User] WHERE Email = @Email";
+                   
+                    string query = "SELECT User_id, Email, Firstname, Lastname, Reg_date, Is_admin FROM [User] WHERE Email = @Email AND Password = @Password";
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         cmd.Parameters.AddWithValue("@Email", user.Email);
+                        cmd.Parameters.AddWithValue("@Password", user.Password);
 
                         con.Open();
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
                             if (reader.Read())
                             {
-                                int userId = reader.GetInt32(0);
-                                string email = reader.GetString(1);
-                                string password = reader.GetString(2);
-
                                 var response = new
                                 {
-                                    UserId = userId,
-                                    Email = email,
-                                    Password = password
+                                    UserId = reader.GetInt32(0),
+                                    Email = reader.GetString(1),
+                                    Firstname = reader.GetString(2),
+                                    Lastname = reader.GetString(3),
+                                    RegDate = reader.GetDateTime(4),
+                                    IsAdmin = reader.GetBoolean(5)
                                 };
 
                                 return Ok(response);
                             }
                             else
                             {
-                                var response = new Response { status = 404, message = "User not found." };
-                                return NotFound(response);
+                                var response = new Response { status = 401, message = "Login failed: incorrect email or password." };
+                                return Unauthorized(response);
                             }
                         }
                     }
@@ -193,6 +204,7 @@ namespace BidXpert_Backend_API.Controllers
                 return StatusCode(500, response);
             }
         }
+
 
 
         [HttpPut]

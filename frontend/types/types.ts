@@ -54,3 +54,17 @@ export type AuctionItemProps = {
   userName: string;
   categoryName: string;
 };
+
+export type CheckoutFormProps = {
+  transactionProps: {
+    title: string;
+    amount: number;
+    date: Date;
+  };
+};
+
+export type CategoryProps = {
+  category_id: number;
+  name: string;
+  value: string;
+};

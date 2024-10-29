@@ -8,8 +8,9 @@ import {
 } from "@stripe/react-stripe-js";
 import convertToSubcurrency from "@/lib/ConvertToSubCurrency";
 import { Button } from "@/components/ui/button";
+import { CheckoutFormProps } from "@/types/types";
 
-const CheckoutForm = ({ amount }: { amount: number }) => {
+const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState<string>();
@@ -17,16 +18,23 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch("/api/create-payment-intent", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ amount: convertToSubcurrency(amount) }),
-    })
-      .then((res) => res.json())
-      .then((data) => setClientSecret(data.clientSecret));
-  }, [amount]);
+    if (transactionProps.amount > 0) {
+      fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: convertToSubcurrency(transactionProps.amount),
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => setClientSecret(data.clientSecret))
+        .catch((error) =>
+          setErrorMessage(`Failed to create payment intent. Error: ${error}`)
+        );
+    }
+  }, [transactionProps.amount]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,7 +56,7 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `http://www.localhost:3000/payment-success?amount=${amount}`,
+        return_url: `http://localhost:3000/payment-success?amount=${transactionProps.amount}`,
       },
     });
 
@@ -81,7 +89,7 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-md">
-      {clientSecret && <PaymentElement />}
+      {clientSecret && transactionProps.amount > 0 && <PaymentElement />}
 
       {errorMessage && <div>{errorMessage}</div>}
 
@@ -90,7 +98,7 @@ const CheckoutForm = ({ amount }: { amount: number }) => {
         disabled={!stripe || loading}
         className="w-full bg-black hover:bg-black/90 text-white font-bold p-5 mt-4 disabled:opacity-50 disabled:animate-pulse"
       >
-        {!loading ? `Pay $${amount}` : "Processing..."}
+        {!loading ? `Pay $${transactionProps.amount}` : "Processing..."}
       </Button>
       <p className="text-xs mt-1 mb-3 text-slate-500">
         This is the final amount you’ll be charged. If everything looks good,
