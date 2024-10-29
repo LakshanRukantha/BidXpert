@@ -51,10 +51,10 @@ export default function AuctionItem({
   end_date,
   start_bid,
   auction_id,
-  userName,
+  listerName,
   high_bid,
   image_url,
-  user_id,
+  lister_id,
 }: AuctionItemProps) {
   const session = useSession();
   const { toast } = useToast();
@@ -70,7 +70,7 @@ export default function AuctionItem({
       </CardHeader>
       <CardContent>
         <div className="flex flex-row justify-between mb-2">
-          <h3 className="to-slate-500 float-end">By {userName}</h3>
+          <h3 className="to-slate-500 float-end">By {listerName}</h3>
           <Separator orientation="vertical" className="bg-secondary w-[2px]" />
           <h3 className="to-slate-500 float-end flex flex-row items-center">
             <CalendarDays className="w-4 mr-1" />
@@ -126,7 +126,7 @@ export default function AuctionItem({
         </div>
       </CardContent>
       <CardFooter className="flex flex-row gap-2">
-        {user_id === session.data?.user?.id && (
+        {lister_id === session.data?.user?.id && (
           <>
             <Button variant={"destructive"} size={"icon"}>
               <Trash />
@@ -228,6 +228,9 @@ export default function AuctionItem({
 
         <Button
           className="w-full flex-1"
+          disabled={
+            bidAmount <= high_bid && lister_id === session.data?.user?.id
+          }
           onClick={async () => {
             toast({
               variant: "default",
