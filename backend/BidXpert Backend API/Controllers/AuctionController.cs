@@ -28,7 +28,7 @@ public async Task<IActionResult> GetAllAuctions()
 
     using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
     {
-        string query = "SELECT a.*, u.Firstname AS UserName, c.Name AS CategoryName FROM Auction a " +
+        string query = "SELECT a.*, u.Firstname AS ListerName FROM Auction a " +
                        "JOIN [User] u ON a.User_id = u.User_id " +
                        "JOIN Category c ON a.Category_id = c.Category_id";
 
@@ -51,10 +51,8 @@ public async Task<IActionResult> GetAllAuctions()
                 Status = row["Status"].ToString(),
                 User_id = Convert.ToInt32(row["User_id"]),
                 Category_id = Convert.ToInt32(row["Category_id"]),
-                
-                // Populating new fields for user and category details
-                UserName = row["UserName"].ToString(),
-                CategoryName = row["CategoryName"].ToString()
+                ListerName = row["ListerName"].ToString(),
+             
 
             });
         }
@@ -117,28 +115,58 @@ public async Task<IActionResult> GetAllAuctions()
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuction(int id, [FromBody] Auction auction)
         {
-            if (id != auction.Auction_id || string.IsNullOrWhiteSpace(auction.Name) || auction.Start_bid <= 0)
+            // Validate the ID in the route matches the Auction_id in the body
+            if (id != auction.Auction_id)
             {
-                return BadRequest(new { status = 400, message = "Invalid auction data." });
+                return BadRequest(new { status = 400, message = "ID mismatch between URL and request body." });
             }
 
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(auction.Name))
+            {
+                return BadRequest(new { status = 400, message = "Auction name is required." });
+            }
+            if (auction.Start_bid <= 0)
+            {
+                return BadRequest(new { status = 400, message = "Start bid must be greater than zero." });
+            }
+            if (auction.User_id <= 0)
+            {
+                return BadRequest(new { status = 400, message = "User ID must be a positive integer." });
+            }
+            if (auction.Category_id <= 0)
+            {
+                return BadRequest(new { status = 400, message = "Category ID must be a positive integer." });
+            }
+
+            // Perform the update
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
             {
-                string query = "UPDATE Auction SET Name = @Name, Description = @Description, Start_bid = @Start_bid, High_bid = @High_bid, " +
-                               "Image_url = @Image_url, Listed_on = @Listed_on, End_date = @End_date, Status = @Status, " +
-                               "User_id = @User_id, Category_id = @Category_id WHERE Auction_id = @Auction_id";
+                string query = @"UPDATE Auction SET 
+                            Name = @Name, 
+                            Description = @Description, 
+                            Start_bid = @Start_bid, 
+                            High_bid = @High_bid, 
+                            Image_url = @Image_url, 
+                            Listed_on = @Listed_on, 
+                            End_date = @End_date, 
+                            Status = @Status, 
+                            User_id = @User_id, 
+                            Category_id = @Category_id 
+                         WHERE Auction_id = @Auction_id";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    cmd.Parameters.AddWithValue("@Auction_id", auction.Auction_id);
+                    // Set parameters with nullable checks
+                    cmd.Parameters.AddWithValue("@Auction_id", id);
                     cmd.Parameters.AddWithValue("@Name", auction.Name);
-                    cmd.Parameters.AddWithValue("@Description", auction.Description);
+                    cmd.Parameters.AddWithValue("@Description", auction.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Start_bid", auction.Start_bid);
-                    cmd.Parameters.AddWithValue("@High_bid", auction.High_bid);
+                    cmd.Parameters.AddWithValue("@High_bid", auction.High_bid ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Image_url", auction.Image_url ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Listed_on", auction.Listed_on);
                     cmd.Parameters.AddWithValue("@End_date", auction.End_date);
-                    cmd.Parameters.AddWithValue("@Status", auction.Status);
+                    cmd.Parameters.AddWithValue("@Status", auction.Status ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@User_id", auction.User_id);
                     cmd.Parameters.AddWithValue("@Category_id", auction.Category_id);
 
@@ -146,12 +174,17 @@ public async Task<IActionResult> GetAllAuctions()
                     int result = await cmd.ExecuteNonQueryAsync();
 
                     if (result > 0)
+                    {
                         return Ok(new { status = 200, message = "Auction updated successfully." });
-
-                    return NotFound(new { status = 404, message = "Auction not found." });
+                    }
+                    else
+                    {
+                        return NotFound(new { status = 404, message = "Auction not found." });
+                    }
                 }
             }
         }
+
 
     }
 }
