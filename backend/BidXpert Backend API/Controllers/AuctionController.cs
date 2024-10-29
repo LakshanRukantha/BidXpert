@@ -62,7 +62,54 @@ namespace BidXpert_Backend_API.Controllers
 
             return Ok(new { status = 200, message = "Auctions retrieved successfully.", Data = auctionList });
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAuctionById(int id)
+        {
+            Auction auction = null;
 
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+            {
+                string query = @"SELECT a.*, u.Firstname AS ListerName, c.Name AS CategoryName 
+                         FROM Auction a 
+                         JOIN [User] u ON a.User_id = u.User_id 
+                         JOIN Category c ON a.Category_id = c.Category_id
+                         WHERE a.Auction_id = @AuctionId";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@AuctionId", id);
+
+                    con.Open();
+                    using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        if (reader.Read())
+                        {
+                            auction = new Auction
+                            {
+                                Auction_id = Convert.ToInt32(reader["Auction_id"]),
+                                Name = reader["Name"].ToString(),
+                                Description = reader["Description"].ToString(),
+                                Start_bid = Convert.ToDecimal(reader["Start_bid"]),
+                                High_bid = reader["High_bid"] as decimal?,
+                                Image_url = reader["Image_url"].ToString(),
+                                Listed_on = Convert.ToDateTime(reader["Listed_on"]),
+                                End_date = Convert.ToDateTime(reader["End_date"]),
+                                Status = reader["Status"].ToString(),
+                                Lister_id = Convert.ToInt32(reader["User_id"]),
+                                Category_id = Convert.ToInt32(reader["Category_id"]),
+                                ListerName = reader["ListerName"].ToString(),
+                                CategoryName = reader["CategoryName"].ToString()
+                            };
+                        }
+                    }
+                }
+            }
+
+            if (auction == null)
+                return NotFound(new { status = 404, message = "Auction not found." });
+
+            return Ok(new { status = 200, message = "Auction retrieved successfully.", Data = auction });
+        }
 
 
 
