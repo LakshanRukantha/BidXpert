@@ -3,7 +3,7 @@
     public class Auction
     {
         public int Auction_id {  get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public string? Description { get; set; }
         public decimal Start_bid { get; set; }
         public decimal? High_bid { get; set; }
