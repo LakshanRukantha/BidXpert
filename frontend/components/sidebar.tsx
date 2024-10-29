@@ -58,17 +58,21 @@ import {
 } from "@/components/ui/sidebar";
 import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { getFirstLetters } from "@/lib/utils";
 
 // Mock data for database emulation
 const categories = [
-  { id: 1, title: "Vehicles", url: "/categories/vehicles" },
-  { id: 2, title: "Home & Property", url: "/categories/home-property" },
-  { id: 3, title: "Electronics", url: "/categories/electronics" },
-  { id: 4, title: "Fashion", url: "/categories/fashion" },
+  { id: 1, title: "Vehicles", url: "/?category=vehicles" },
+  {
+    id: 2,
+    title: "Home & Property",
+    url: "/?category=home-property",
+  },
+  { id: 3, title: "Electronics", url: "/?category=electronics" },
+  { id: 4, title: "Fashion", url: "/?category=fashion" },
 ];
 
 const data = {
@@ -99,7 +103,7 @@ const data = {
   navUserProtected: [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: "",
       icon: LayoutDashboard,
       isActive: true,
       items: [
@@ -189,6 +193,7 @@ export default function SideBar({
 }>) {
   const pathName = usePathname();
   const session = useSession();
+  const router = useRouter();
 
   const IS_LOGGED_IN = session && session.status === "authenticated";
   const IS_ADMIN = IS_LOGGED_IN && session.data.user.role === "admin";
@@ -335,15 +340,27 @@ export default function SideBar({
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push("/account");
+                        }}
+                      >
                         <BadgeCheck />
                         Account
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push("/transactions");
+                        }}
+                      >
                         <CreditCard />
                         Transactions
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push("/notifications");
+                        }}
+                      >
                         <Bell />
                         Notifications
                       </DropdownMenuItem>
