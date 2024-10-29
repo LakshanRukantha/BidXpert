@@ -49,9 +49,9 @@ export type AuctionItemProps = {
   image_url: string;
   listed_on: string;
   status: string;
-  user_id: number;
+  lister_id: number;
   category_id: number;
-  userName: string;
+  listerName: string;
   categoryName: string;
 };
 
