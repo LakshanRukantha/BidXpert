@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, getCategories } from "@/lib/utils";
 import { BadgePlus, CalendarIcon, CircleAlert, ImageUp } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import auctionValidationSchema from "@/schemas/AuctionValidationSchema";
-import { AuctionInputs } from "@/types/types";
+import { AuctionInputs, CategoryProps } from "@/types/types";
 import {
   Select,
   SelectContent,
@@ -51,6 +51,14 @@ if (!backendUrl) {
 
 const CreateAuction = () => {
   const session = useSession();
+  const [caregories, setCategories] = useState([]);
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data);
+    });
+  }, [session]);
+
   const toast = useToast().toast;
   const form = useForm<AuctionInputs>({
     defaultValues: {
@@ -163,10 +171,14 @@ const CreateAuction = () => {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Categories</SelectLabel>
-                    <SelectItem value="1">Vehicles</SelectItem>
-                    <SelectItem value="2">Home & Property</SelectItem>
-                    <SelectItem value="3">Electronics</SelectItem>
-                    <SelectItem value="4">Fashion</SelectItem>
+                    {caregories.map((category: CategoryProps) => (
+                      <SelectItem
+                        key={category.category_id}
+                        value={category.category_id.toString()}
+                      >
+                        {category.name}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>

@@ -46,3 +46,9 @@ export type CheckoutFormProps = {
     date: Date;
   };
 };
+
+export type CategoryProps = {
+  category_id: number;
+  name: string;
+  value: string;
+};
