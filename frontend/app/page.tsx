@@ -66,8 +66,8 @@ export default function Home() {
               image_url={auction.image_url}
               listed_on={auction.listed_on}
               status={auction.status}
-              userName={auction.userName}
-              user_id={auction.user_id}
+              listerName={auction.listerName}
+              lister_id={auction.lister_id}
             />
           );
         })}
