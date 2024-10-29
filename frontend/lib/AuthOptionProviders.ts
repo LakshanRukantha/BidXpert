@@ -18,7 +18,7 @@ if (!BACKEND_URL) {
 declare module "next-auth" {
   interface Session {
     user: {
-      id: string;
+      id: number;
       email: string;
       name: string;
       role: string;
@@ -26,7 +26,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    id: string;
+    id: number;
     email: string;
     firstName: string;
     lastName: string;
@@ -108,7 +108,7 @@ export const AuthOptionProviders: NextAuthOptions = {
     async session({ session, token }) {
       // Assign values from token to session.user
       session.user = {
-        id: token.id as string,
+        id: token.id as number,
         email: token.email as string,
         name: `${token.firstName as string} ${token.lastName as string}`,
         role: token.role as string,

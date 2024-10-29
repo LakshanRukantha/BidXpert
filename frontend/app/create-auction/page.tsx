@@ -40,8 +40,17 @@ import {
 import { SingleImageDropzone } from "@/components/image-dropzone";
 import { useEdgeStore } from "@/lib/edgestore";
 import { Progress } from "@/components/ui/progress";
+import axios from "axios";
+import { useSession } from "next-auth/react";
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+if (!backendUrl) {
+  throw new Error("Backend URL is not defined");
+}
 
 const CreateAuction = () => {
+  const session = useSession();
   const toast = useToast().toast;
   const form = useForm<AuctionInputs>({
     defaultValues: {
@@ -76,8 +85,39 @@ const CreateAuction = () => {
 
   const onSubmit = async (data: AuctionInputs) => {
     // Handle form submission here (e.g., sending data to the server)
-    console.log(data);
-    toast({ description: "Auction created successfully!" });
+    try {
+      const response = await axios.post(`${backendUrl}/api/auction/add`, {
+        name: data.title,
+        description: data.description,
+        start_bid: data.price,
+        high_bid: data.price,
+        image_url: data.image,
+        listed_on: new Date(),
+        end_date: data.end_date,
+        status: "active",
+        user_id: session?.data?.user.id,
+        category_id: Number(data.category),
+        UserName: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED UserName)
+        CategoryName: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED CategoryName)
+      });
+
+      if (response.status === 200) {
+        toast({
+          variant: "default",
+          title: "Success",
+          description: "Auction created successfully.",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create auction. Please try again.",
+      });
+      return;
+    }
   };
   return (
     <div className="flex items-center min-h-full justify-center w-full">
@@ -123,10 +163,10 @@ const CreateAuction = () => {
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Categories</SelectLabel>
-                    <SelectItem value="vehicles">Vehicles</SelectItem>
-                    <SelectItem value="home">Home & Property</SelectItem>
-                    <SelectItem value="electronics">Electronics</SelectItem>
-                    <SelectItem value="fashion">Fashion</SelectItem>
+                    <SelectItem value="1">Vehicles</SelectItem>
+                    <SelectItem value="2">Home & Property</SelectItem>
+                    <SelectItem value="3">Electronics</SelectItem>
+                    <SelectItem value="4">Fashion</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
