@@ -62,6 +62,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { getFirstLetters } from "@/lib/utils";
+import NotificationsPopup from "./notifications-popup";
 
 // Mock data for database emulation
 const categories = [
@@ -356,14 +357,12 @@ export default function SideBar({
                         <CreditCard />
                         Transactions
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => {
-                          router.push("/notifications");
-                        }}
-                      >
-                        <Bell />
-                        Notifications
-                      </DropdownMenuItem>
+                      <NotificationsPopup user_id={"1"}>
+                        <DropdownMenuItem>
+                          <Bell />
+                          Notifications
+                        </DropdownMenuItem>
+                      </NotificationsPopup>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => signOut()}>
