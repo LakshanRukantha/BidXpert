@@ -59,7 +59,7 @@ const SignIn = () => {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Invalid email or password",
+          description: "Invalid email or password. Please try again.",
         });
         return;
       }
@@ -73,8 +73,6 @@ const SignIn = () => {
       className="flex items-center min-h-full justify-center w-full"
     >
       <Card className="p-2 md:p-3 lg:p-4 max-w-xl -mt-12 md:-mt-16 lg:-mt-20 w-full">
-        {session.status}
-        {nextPublicUrl}
         <h1 className="text-xl md:text-2xl lg:text-3xl">
           Let’s Get You Signed In
         </h1>

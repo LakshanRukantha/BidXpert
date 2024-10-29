@@ -1,6 +1,18 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { User } from "next-auth";
+import axios from "axios";
+
+// Disable SSL verification in development only
+if (process.env.NODE_ENV === "development") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+
+if (!BACKEND_URL) {
+  throw new Error("BACKEND_URL is not defined");
+}
 
 // Extend the default user type to include the role property
 declare module "next-auth" {
@@ -41,21 +53,27 @@ const credentialsAuth = CredentialsProvider({
     // Try to authenticate the user and return the user object
     try {
       // Mock API call to check if the user exists and the password is correct
-      const user = {
-        id: "1",
-        email: email,
-        firstName: "Lakshan",
-        lastName: "Rukantha",
-        role: "admin",
-      };
+      const response = await axios.post(`${BACKEND_URL}/api/user/signin`, {
+        firstname: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED firstname)
+        lastname: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED lastname)
+        email,
+        password,
+      });
 
-      // Example user object
+      const user = response.data;
+
+      // Check if the user exists
+      if (response.status !== 200) {
+        return null;
+      }
+
+      // Create a user object
       const authenticatedUser: User = {
-        id: user.id,
+        id: user.userId,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
+        firstName: user.firstname,
+        lastName: user.lastname,
+        role: user.isAdmin ? "admin" : "user",
       };
 
       // Return the user object
