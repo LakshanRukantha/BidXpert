@@ -61,12 +61,7 @@ import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-
-function getFirstLetters(input: string) {
-  const words = input.split(" ");
-  const firstLetters = words.map((word: string) => word.charAt(0));
-  return firstLetters[0] + firstLetters[1];
-}
+import { getFirstLetters } from "@/lib/utils";
 
 // Mock data for database emulation
 const categories = [
