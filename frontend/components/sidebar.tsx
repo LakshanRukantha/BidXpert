@@ -61,132 +61,11 @@ import { Button } from "./ui/button";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
-import { getFirstLetters } from "@/lib/utils";
+import { getCategories, getFirstLetters } from "@/lib/utils";
 import NotificationsPopup from "./notifications-popup";
 import TransactionsPopup from "./transactions-popup";
-
-// Mock data for database emulation
-const categories = [
-  { id: 1, title: "Vehicles", url: "/?category=vehicles" },
-  {
-    id: 2,
-    title: "Home & Property",
-    url: "/?category=home-property",
-  },
-  { id: 3, title: "Electronics", url: "/?category=electronics" },
-  { id: 4, title: "Fashion", url: "/?category=fashion" },
-];
-
-const data = {
-  navMain: [
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      // isActive: true,
-      items: [
-        // {
-        //   title: "Sub Menu 1",
-        //   url: "#",
-        // },
-      ],
-    },
-    {
-      title: "Categories",
-      url: "",
-      icon: List,
-      isActive: true,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navUserProtected: [
-    {
-      title: "Dashboard",
-      url: "",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "My Bids",
-          url: "/my-bids",
-        },
-        {
-          title: "Create Auction",
-          url: "/create-auction",
-        },
-        {
-          title: "My Auctions",
-          url: "/my-auctions",
-        },
-      ],
-    },
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      items: [],
-    },
-    {
-      title: "Categories",
-      url: "",
-      isActive: false,
-      icon: List,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navAdminProtected: [
-    {
-      title: "Admin Dashboard",
-      url: "/admin-dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "Manage Auctions",
-          url: "manage-auctions",
-        },
-        {
-          title: "User Management",
-          url: "user-management",
-        },
-      ],
-    },
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      items: [],
-    },
-    {
-      title: "Categories",
-      url: "",
-      isActive: false,
-      icon: List,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "/support",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Contact Us",
-      url: "/contact",
-      icon: Send,
-    },
-  ],
-};
+import { useEffect, useState } from "react";
+import { CategoryProps } from "@/types/types";
 
 export default function SideBar({
   children,
@@ -196,6 +75,123 @@ export default function SideBar({
   const pathName = usePathname();
   const session = useSession();
   const router = useRouter();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data);
+    });
+  }, [session]);
+  const data = {
+    navMain: [
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        // isActive: true,
+        items: [
+          // {
+          //   title: "Sub Menu 1",
+          //   url: "#",
+          // },
+        ],
+      },
+      {
+        title: "Categories",
+        url: "",
+        icon: List,
+        isActive: true,
+        items: categories.map((category: CategoryProps) => ({
+          title: category.name,
+          url: `?category=${category.value}`,
+        })),
+      },
+    ],
+    navUserProtected: [
+      {
+        title: "Dashboard",
+        url: "",
+        icon: LayoutDashboard,
+        isActive: true,
+        items: [
+          {
+            title: "My Bids",
+            url: "/my-bids",
+          },
+          {
+            title: "Create Auction",
+            url: "/create-auction",
+          },
+          {
+            title: "My Auctions",
+            url: "/my-auctions",
+          },
+        ],
+      },
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        items: [],
+      },
+      {
+        title: "Categories",
+        url: "",
+        isActive: false,
+        icon: List,
+        items: categories.map((category: CategoryProps) => ({
+          title: category.name,
+          url: `?category=${category.value}`,
+        })),
+      },
+    ],
+    navAdminProtected: [
+      {
+        title: "Admin Dashboard",
+        url: "/admin-dashboard",
+        icon: LayoutDashboard,
+        isActive: true,
+        items: [
+          {
+            title: "Manage Auctions",
+            url: "manage-auctions",
+          },
+          {
+            title: "User Management",
+            url: "user-management",
+          },
+        ],
+      },
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        items: [],
+      },
+      {
+        title: "Categories",
+        url: "",
+        isActive: false,
+        icon: List,
+        items: categories.map((category: CategoryProps) => ({
+          title: category.name,
+          url: `?category=${category.value}`,
+        })),
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "/support",
+        icon: LifeBuoy,
+      },
+      {
+        title: "Contact Us",
+        url: "/contact",
+        icon: Send,
+      },
+    ],
+  };
 
   const IS_LOGGED_IN = session && session.status === "authenticated";
   const IS_ADMIN = IS_LOGGED_IN && session.data.user.role === "admin";
@@ -205,6 +201,12 @@ export default function SideBar({
       ? data.navAdminProtected
       : data.navUserProtected
     : data.navMain;
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data);
+    });
+  }, [session]);
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">

@@ -74,7 +74,7 @@ const CreateAuction = () => {
   });
 
   const { register, handleSubmit, reset, setValue, formState } = form;
-  const { errors, isSubmitting, isSubmitSuccessful } = formState;
+  const { errors, isSubmitting } = formState;
 
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [open, setOpen] = React.useState(false);
@@ -82,14 +82,6 @@ const CreateAuction = () => {
   const [progress, setProgress] = useState(0);
   const [url, setUrl] = useState<string>("");
   const { edgestore } = useEdgeStore();
-
-  // Reset Form
-  useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
-      setUrl("");
-    }
-  }, [isSubmitSuccessful, reset]);
 
   const onSubmit = async (data: AuctionInputs) => {
     // Handle form submission here (e.g., sending data to the server)
@@ -103,13 +95,15 @@ const CreateAuction = () => {
         listed_on: new Date(),
         end_date: data.end_date,
         status: "active",
-        user_id: session?.data?.user.id,
+        lister_id: session?.data?.user.id,
         category_id: Number(data.category),
-        UserName: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED UserName)
+        listerName: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED UserName)
         CategoryName: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED CategoryName)
       });
 
       if (response.status === 200) {
+        reset();
+        setUrl("");
         toast({
           variant: "default",
           title: "Success",

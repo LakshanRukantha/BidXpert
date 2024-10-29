@@ -15,10 +15,14 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { AuctionItemProps } from "@/types/types";
+import { AuctionItemProps, CategoryProps } from "@/types/types";
+import { useSession } from "next-auth/react";
+import { getCategories } from "@/lib/utils";
 
 export default function Home() {
+  const session = useSession();
   const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
+  const [categories, setCategories] = useState([]);
   useEffect(() => {
     axios.get("https://localhost:7174/api/auction/all").then((res) => {
       const { data } = res.data;
@@ -26,6 +30,12 @@ export default function Home() {
       console.log(data);
     });
   }, []);
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data);
+    });
+  }, [session]);
 
   return (
     <div className="flex items-center flex-col">
@@ -37,10 +47,14 @@ export default function Home() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Categories</SelectLabel>
-              <SelectItem value="vehicles">Vehicles</SelectItem>
-              <SelectItem value="home">Home & Property</SelectItem>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="fashion">Fashion</SelectItem>
+              {categories.map((category: CategoryProps) => (
+                <SelectItem
+                  key={category.category_id}
+                  value={category.category_id.toString()}
+                >
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
