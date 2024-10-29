@@ -28,7 +28,7 @@ public async Task<IActionResult> GetAllAuctions()
 
     using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
     {
-        string query = "SELECT a.*, u.Firstname AS UserName, c.Name AS CategoryName FROM Auction a " +
+        string query = "SELECT a.*, u.Firstname AS ListerName,c.Name AS CategoryName FROM Auction a " +
                        "JOIN [User] u ON a.User_id = u.User_id " +
                        "JOIN Category c ON a.Category_id = c.Category_id";
 
@@ -49,11 +49,9 @@ public async Task<IActionResult> GetAllAuctions()
                 Listed_on = Convert.ToDateTime(row["Listed_on"]),
                 End_date = Convert.ToDateTime(row["End_date"]),
                 Status = row["Status"].ToString(),
-                User_id = Convert.ToInt32(row["User_id"]),
+                Lister_id = Convert.ToInt32(row["User_id"]),
                 Category_id = Convert.ToInt32(row["Category_id"]),
-                
-                // Populating new fields for user and category details
-                UserName = row["UserName"].ToString(),
+                ListerName = row["ListerName"].ToString(),
                 CategoryName = row["CategoryName"].ToString()
 
             });
@@ -72,7 +70,7 @@ public async Task<IActionResult> GetAllAuctions()
         {
             if (string.IsNullOrWhiteSpace(auction.Name) ||
                 auction.Start_bid <= 0 ||
-                auction.User_id <= 0 || 
+                auction.Lister_id <= 0 || 
                 auction.Category_id <= 0)
             {
                 return BadRequest(new { status = 400, message = "Invalid auction data." });
@@ -95,7 +93,7 @@ public async Task<IActionResult> GetAllAuctions()
                         cmd.Parameters.AddWithValue("@Listed_on", auction.Listed_on);
                         cmd.Parameters.AddWithValue("@End_date", auction.End_date);
                         cmd.Parameters.AddWithValue("@Status", auction.Status);
-                        cmd.Parameters.AddWithValue("@User_id", auction.User_id);
+                        cmd.Parameters.AddWithValue("@User_id", auction.Lister_id);
                         cmd.Parameters.AddWithValue("@Category_id", auction.Category_id);
 
                         con.Open();
@@ -117,41 +115,75 @@ public async Task<IActionResult> GetAllAuctions()
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuction(int id, [FromBody] Auction auction)
         {
-            if (id != auction.Auction_id || string.IsNullOrWhiteSpace(auction.Name) || auction.Start_bid <= 0)
+           
+            if (id != auction.Auction_id)
             {
-                return BadRequest(new { status = 400, message = "Invalid auction data." });
+                return BadRequest(new { status = 400, message = "ID mismatch between URL and request body." });
+            }
+
+           
+            if (string.IsNullOrWhiteSpace(auction.Name))
+            {
+                return BadRequest(new { status = 400, message = "Auction name is required." });
+            }
+            if (auction.Start_bid <= 0)
+            {
+                return BadRequest(new { status = 400, message = "Start bid must be greater than zero." });
+            }
+            if (auction.Lister_id <= 0)
+            {
+                return BadRequest(new { status = 400, message = "User ID must be a positive integer." });
+            }
+            if (auction.Category_id <= 0)
+            {
+                return BadRequest(new { status = 400, message = "Category ID must be a positive integer." });
             }
 
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
             {
-                string query = "UPDATE Auction SET Name = @Name, Description = @Description, Start_bid = @Start_bid, High_bid = @High_bid, " +
-                               "Image_url = @Image_url, Listed_on = @Listed_on, End_date = @End_date, Status = @Status, " +
-                               "User_id = @User_id, Category_id = @Category_id WHERE Auction_id = @Auction_id";
+                string query = @"UPDATE Auction SET 
+                            Name = @Name, 
+                            Description = @Description, 
+                            Start_bid = @Start_bid, 
+                            High_bid = @High_bid, 
+                            Image_url = @Image_url, 
+                            Listed_on = @Listed_on, 
+                            End_date = @End_date, 
+                            Status = @Status, 
+                            User_id = @User_id, 
+                            Category_id = @Category_id 
+                         WHERE Auction_id = @Auction_id";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
-                    cmd.Parameters.AddWithValue("@Auction_id", auction.Auction_id);
+                   
+                    cmd.Parameters.AddWithValue("@Auction_id", id);
                     cmd.Parameters.AddWithValue("@Name", auction.Name);
-                    cmd.Parameters.AddWithValue("@Description", auction.Description);
+                    cmd.Parameters.AddWithValue("@Description", auction.Description ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Start_bid", auction.Start_bid);
-                    cmd.Parameters.AddWithValue("@High_bid", auction.High_bid);
+                    cmd.Parameters.AddWithValue("@High_bid", auction.High_bid ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Image_url", auction.Image_url ?? (object)DBNull.Value);
                     cmd.Parameters.AddWithValue("@Listed_on", auction.Listed_on);
                     cmd.Parameters.AddWithValue("@End_date", auction.End_date);
-                    cmd.Parameters.AddWithValue("@Status", auction.Status);
-                    cmd.Parameters.AddWithValue("@User_id", auction.User_id);
+                    cmd.Parameters.AddWithValue("@Status", auction.Status ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@User_id", auction.Lister_id);
                     cmd.Parameters.AddWithValue("@Category_id", auction.Category_id);
 
                     con.Open();
                     int result = await cmd.ExecuteNonQueryAsync();
 
                     if (result > 0)
+                    {
                         return Ok(new { status = 200, message = "Auction updated successfully." });
-
-                    return NotFound(new { status = 404, message = "Auction not found." });
+                    }
+                    else
+                    {
+                        return NotFound(new { status = 404, message = "Auction not found." });
+                    }
                 }
             }
         }
+
 
     }
 }
