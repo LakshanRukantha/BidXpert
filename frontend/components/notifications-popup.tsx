@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Separator } from "./ui/separator";
+import { Card } from "./ui/card";
+import axios from "axios";
+import { formatDistanceToNow } from "date-fns";
+import { ArrowBigDownDash, ArrowBigUpDash, CircleCheckBig } from "lucide-react";
 
 const NotificationsPopup = ({
   user_id,
@@ -9,7 +13,26 @@ const NotificationsPopup = ({
   user_id: string;
   children: React.ReactNode;
 }) => {
+  console.log("user_id", user_id);
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await axios.get(
+          `https://localhost:7174/api/notifications/all/${user_id}`
+        );
+        const { data } = res.data;
+        setNotifications(data);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
+      }
+    };
+
+    fetchNotifications();
+  }, [user_id]);
 
   const handleOpen = (event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent the dropdown from closing
@@ -25,7 +48,35 @@ const NotificationsPopup = ({
             <DialogTitle>Notifications</DialogTitle>
           </DialogHeader>
           <Separator />
-          <div className="grid py-4 text-center">Nothing to see here</div>
+          {notifications.length === 0 ? (
+            <p>No Notifications</p>
+          ) : (
+            notifications.map(
+              (notification: {
+                notificationId: number;
+                type: string;
+                content: string;
+                sentDate: string;
+              }) => (
+                <Card
+                  className="w-full p-4 flex flex-row items-center justify-between"
+                  key={notification.notificationId}
+                >
+                  <div className="flex flex-row items-center gap-4">
+                    {notification.type === "placed" && <ArrowBigUpDash />}
+                    {notification.type === "received" && <ArrowBigDownDash />}
+                    {notification.type === "claimed" && <CircleCheckBig />}
+                    <p>{notification.content}</p>
+                  </div>
+                  <p>
+                    {formatDistanceToNow(new Date(notification.sentDate), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                </Card>
+              )
+            )
+          )}
         </DialogContent>
       </Dialog>
     </>

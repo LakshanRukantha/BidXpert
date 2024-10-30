@@ -361,7 +361,9 @@ export default function SideBar({
                           Transactions
                         </DropdownMenuItem>
                       </TransactionsPopup>
-                      <NotificationsPopup user_id={"1"}>
+                      <NotificationsPopup
+                        user_id={session.data.user.id.toString()}
+                      >
                         <DropdownMenuItem>
                           <Bell />
                           Notifications
