@@ -50,23 +50,25 @@ const MyBids = () => {
 
   const handleDeleteBid = async (bidId: number) => {
     try {
-      await axios.delete(`https://localhost:7174/api/bid/${bidId}`).then(() => {
-        toast({
-          variant: "default",
-          title: "Success",
-          description: "Bid deleted successfully.",
+      await axios
+        .delete(`https://localhost:7174/api/bid/delete/${bidId}`)
+        .then(() => {
+          toast({
+            variant: "default",
+            title: "Success",
+            description: "Bid deleted successfully.",
+          });
+          setBids((prevBids) =>
+            prevBids.filter(
+              (bid: {
+                bid_id: number;
+                auction_title: string;
+                placed_on: string;
+                amount: number;
+              }) => bid.bid_id !== bidId
+            )
+          );
         });
-        setBids((prevBids) =>
-          prevBids.filter(
-            (bid: {
-              bid_id: number;
-              auction_title: string;
-              placed_on: string;
-              amount: number;
-            }) => bid.bid_id !== bidId
-          )
-        );
-      });
     } catch (error) {
       console.error("Error deleting bid:", error);
     }
