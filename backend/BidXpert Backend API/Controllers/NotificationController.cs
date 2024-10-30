@@ -73,7 +73,7 @@ namespace BidXpert_Backend_API.Controllers
 
 
         [HttpGet("all/{id}")]
-        public IActionResult GetAllNotificationsByUserId(int userId)
+        public IActionResult GetAllNotificationsByUserId(int id)
         {
             var response = new Response();
             List<Notification> notifications = new List<Notification>();
@@ -83,7 +83,7 @@ namespace BidXpert_Backend_API.Controllers
                 using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
                 {
                     SqlDataAdapter da = new SqlDataAdapter("SELECT * FROM Notification WHERE User_id = @UserId", con);
-                    da.SelectCommand.Parameters.AddWithValue("@UserId", userId);
+                    da.SelectCommand.Parameters.AddWithValue("@UserId", id);
                     DataTable dt = new DataTable();
                     da.Fill(dt);
 

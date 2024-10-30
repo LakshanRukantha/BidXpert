@@ -30,6 +30,7 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { sendInSiteNotification } from "@/lib/notification-sender";
 
 export default function AuctionItem({
   name,
@@ -91,6 +92,7 @@ export default function AuctionItem({
             description: "Bid placed successfully.",
           });
         });
+      await sendInSiteNotification(name, bid.bidder_id, lister_id);
       await sendEmailNotification({
         auctionListerEmail: listerEmail,
         auctionListerName: listerName,
