@@ -92,7 +92,7 @@ export default function AuctionItem({
             description: "Bid placed successfully.",
           });
         });
-      await sendInSiteNotification(name, bid.bidder_id, lister_id);
+      await sendInSiteNotification(name, bid.bidder_id, lister_id, bid.amount);
       await sendEmailNotification({
         auctionListerEmail: listerEmail,
         auctionListerName: listerName,
