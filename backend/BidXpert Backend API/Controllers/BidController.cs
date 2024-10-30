@@ -73,7 +73,7 @@ namespace BidXpert_Backend_API.Controllers
             {
                 await con.OpenAsync();
 
-                string query = "SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, a.Name AS Auction_Title FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id;";
+                string query = "SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, b.Status, a.Name AS Auction_Title FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id;";
 
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
@@ -89,7 +89,8 @@ namespace BidXpert_Backend_API.Controllers
                                 Placed_on = reader.GetDateTime(reader.GetOrdinal("Placed_on")),
                                 Auction_id = reader.GetInt32(reader.GetOrdinal("Auction_id")),
                                 Bidder_id = reader.GetInt32(reader.GetOrdinal("Bidder_id")),
-                                Auction_title = reader.GetString(reader.GetOrdinal("Auction_Title"))
+                                Auction_title = reader.GetString(reader.GetOrdinal("Auction_Title")),
+                                Status = reader.GetString(reader.GetOrdinal("Status"))
                             };
 
                             bids.Add(bid);
@@ -125,8 +126,8 @@ namespace BidXpert_Backend_API.Controllers
                     try
                     {
 
-                        string insertBidQuery = "INSERT INTO Bid (Amount, Placed_on, Auction_id, Bidder_id) " +
-                                                "VALUES (@Amount, @Placed_on, @Auction_id, @Bidder_id);" +
+                        string insertBidQuery = "INSERT INTO Bid (Amount, Placed_on, Auction_id, Bidder_id, Status) " +
+                                                "VALUES (@Amount, @Placed_on, @Auction_id, @Bidder_id, @Status);" +
                                                 "SELECT CAST(scope_identity() AS int);";
                         using (SqlCommand cmd = new SqlCommand(insertBidQuery, con, transaction))
                         {
@@ -134,6 +135,7 @@ namespace BidXpert_Backend_API.Controllers
                             cmd.Parameters.AddWithValue("@Placed_on", newBid.Placed_on);
                             cmd.Parameters.AddWithValue("@Auction_id", newBid.Auction_id);
                             cmd.Parameters.AddWithValue("@Bidder_id", newBid.Bidder_id);
+                            cmd.Parameters.AddWithValue("@Status", newBid.Status);
 
                             newBid.Bid_id = (int)await cmd.ExecuteScalarAsync();
                         }
