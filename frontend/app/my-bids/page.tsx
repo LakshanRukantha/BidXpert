@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -65,6 +66,7 @@ const MyBids = () => {
                 auction_title: string;
                 placed_on: string;
                 amount: number;
+                status: string;
               }) => bid.bid_id !== bidId
             )
           );
@@ -97,6 +99,7 @@ const MyBids = () => {
               <TableHead>Name</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Placed On</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -108,6 +111,7 @@ const MyBids = () => {
                 auction_title: string;
                 placed_on: string;
                 amount: number;
+                status: string;
               }) => (
                 <TableRow key={bid.bid_id}>
                   <TableCell className="font-medium">{bid.bid_id}</TableCell>
@@ -115,6 +119,9 @@ const MyBids = () => {
                   <TableCell>{bid.amount}</TableCell>
                   <TableCell>
                     {format(new Date(bid.placed_on), "dd/MM/yyyy")}
+                  </TableCell>
+                  <TableCell>
+                    <Badge>{bid.status}</Badge>
                   </TableCell>
                   <TableCell className="flex items-center gap-2 justify-end">
                     <Button
