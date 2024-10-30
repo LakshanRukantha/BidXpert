@@ -68,3 +68,13 @@ export type CategoryProps = {
   name: string;
   value: string;
 };
+
+export type TransactionProps = {
+  transactionId: number;
+  title: string;
+  amount: number;
+  date: string;
+  status: string;
+  auctionId: number;
+  key: number;
+}
