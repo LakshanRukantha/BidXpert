@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 
 namespace BidXpert_Backend_API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/bid")]
     [ApiController]
     public class BidController : ControllerBase
     {
@@ -19,7 +19,7 @@ namespace BidXpert_Backend_API.Controllers
         }
 
         [HttpGet]
-        [Route("api/bid/bids-by-bidder/{bidderId}")]
+        [Route("{bidderId}")]
         public async Task<IActionResult> GetBidsByBidder(int bidderId)
         {
             List<Bid> bids = new List<Bid>();
@@ -28,8 +28,8 @@ namespace BidXpert_Backend_API.Controllers
             {
                 await con.OpenAsync();
 
-                string query = "SELECT Bid_id, Amount, Placed_on, Auction_id, User_id AS Bidder_id " +
-                               "FROM Bid WHERE User_id = @Bidder_id;";
+                string query = "SELECT Bid_id, Amount, Placed_on, Auction_id, Bidder_id " +
+                               "FROM Bid WHERE Bidder_id = @Bidder_id;";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
@@ -62,9 +62,9 @@ namespace BidXpert_Backend_API.Controllers
             return Ok(new { status = 200, message = "Bids retrieved successfully.", data = bids });
         }
 
-        
+
         [HttpGet]
-        [Route("api/bid/all")]
+        [Route("all")]
         public async Task<IActionResult> GetAllBids()
         {
             List<Bid> bids = new List<Bid>();
@@ -73,7 +73,7 @@ namespace BidXpert_Backend_API.Controllers
             {
                 await con.OpenAsync();
 
-                string query = "SELECT Bid_id, Amount, Placed_on, Auction_id, User_id AS Bidder_id FROM Bid;";
+                string query = "SELECT Bid_id, Amount, Placed_on, Auction_id, Bidder_id FROM Bid;";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
@@ -117,26 +117,26 @@ namespace BidXpert_Backend_API.Controllers
             {
                 con.Open();
 
-                
+
                 using (SqlTransaction transaction = con.BeginTransaction())
                 {
                     try
                     {
-                        
-                        string insertBidQuery = "INSERT INTO Bid (Amount, Placed_on, Auction_id, User_id) " +
-                                                "VALUES (@Amount, @Placed_on, @Auction_id, @User_id);" +
+
+                        string insertBidQuery = "INSERT INTO Bid (Amount, Placed_on, Auction_id, Bidder_id) " +
+                                                "VALUES (@Amount, @Placed_on, @Auction_id, @Bidder_id);" +
                                                 "SELECT CAST(scope_identity() AS int);";
                         using (SqlCommand cmd = new SqlCommand(insertBidQuery, con, transaction))
                         {
                             cmd.Parameters.AddWithValue("@Amount", newBid.Amount);
                             cmd.Parameters.AddWithValue("@Placed_on", newBid.Placed_on);
                             cmd.Parameters.AddWithValue("@Auction_id", newBid.Auction_id);
-                            cmd.Parameters.AddWithValue("@User_id", newBid.Bidder_id); 
+                            cmd.Parameters.AddWithValue("@Bidder_id", newBid.Bidder_id);
 
                             newBid.Bid_id = (int)await cmd.ExecuteScalarAsync();
                         }
 
-                   
+
                         string updateAuctionQuery = "UPDATE Auction SET High_bid = @High_bid WHERE Auction_id = @Auction_id AND (High_bid IS NULL OR High_bid < @High_bid);";
                         using (SqlCommand cmd = new SqlCommand(updateAuctionQuery, con, transaction))
                         {
@@ -145,7 +145,7 @@ namespace BidXpert_Backend_API.Controllers
                             await cmd.ExecuteNonQueryAsync();
                         }
 
-                        
+
                         transaction.Commit();
 
                         return Ok(new { status = 201, message = "Bid created successfully.", data = newBid });
