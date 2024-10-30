@@ -1,6 +1,6 @@
 "use client";
 
-import BidListCard from "@/components/bid-list-card";
+import ItemListCard from "@/components/item-list-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,19 +15,39 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { getFirstLetters } from "@/lib/utils";
-import { Crown, Eye, Pencil, Trash } from "lucide-react";
+import { AuctionItemProps } from "@/types/types";
+import axios from "axios";
+import { Crown, Pencil, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const Account = () => {
   const session = useSession();
+  console.log("ID:", session.data?.user.id);
+  const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
+  useEffect(() => {
+    axios
+      .get("https://localhost:7174/api/auction/all")
+      .then((res) => {
+        const { data } = res.data;
+
+        const filteredAuctions = data.filter(
+          (auction: AuctionItemProps) =>
+            auction.lister_id === session.data?.user.id
+        );
+
+        setAuctions(filteredAuctions);
+        console.log("Auctions: " + filteredAuctions);
+      })
+      .catch((error) => {
+        console.error("Error fetching auctions:", error);
+      });
+  }, [session.data?.user.id]);
   const user = session.data?.user;
   return (
     <div className="flex flex-col lg:flex-row gap-4">
       <Card className="flex flex-col p-2 justify-between md:flex-1">
         <div className="w-full">
-          {/* <Label className="text-2xl font-semibold">My Profile</Label> */}
           <div className="flex flex-row items-center py-2">
             <Avatar className="h-20 w-20 rounded-lg">
               <AvatarFallback className="rounded-lg text-2xl">
@@ -99,43 +119,24 @@ const Account = () => {
         <Card className="p-2 lg:flex-1">
           <Label className="text-2xl font-semibold">My Recent Auctions</Label>
           <Separator className="mb-2" />
+          {auctions.length === 0 && (
+            <div className="text-lg h-full flex flex-col items-center justify-center text-center">
+              <p className="-mt-16">You have no auctions to show yet 😢</p>
+            </div>
+          )}
           <ScrollArea className="h-80">
-            <BidListCard
-              image_url="images/no-image.png"
-              title="iPhone 15 Pro Max"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
-            <BidListCard
-              image_url="images/no-image.png"
-              title="Laptop Keyboard"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
-            <BidListCard
-              image_url="images/no-image.png"
-              title="Samsung Galaxy S22 Ultra"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
-            <BidListCard
-              image_url="images/no-image.png"
-              title="MacBook Pro 2022"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
-            <BidListCard
-              image_url="images/no-image.png"
-              title="Apple Watch Series 8"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
-            <BidListCard
-              image_url="images/no-image.png"
-              title="iPad Pro 2022"
-              listed_date="2022-10-10"
-              type="recent_auction"
-            />
+            {auctions.length > 0 &&
+              auctions.map((auction) => {
+                return (
+                  <ItemListCard
+                    key={auction.auction_id}
+                    image_url={auction.image_url}
+                    title={auction.name}
+                    listed_date={auction.listed_on}
+                    type="recent_auction"
+                  />
+                );
+              })}
           </ScrollArea>
         </Card>
         <Card className="p-2 lg:flex-1">
@@ -145,14 +146,14 @@ const Account = () => {
           </div> */}
           <Separator className="mb-2" />
           <ScrollArea className="h-80">
-            <BidListCard
+            <ItemListCard
               image_url="images/no-image.png"
               title="iPhone 15 Pro Max"
               listed_date="2022-10-10"
               type="won_bid"
               isClaimed={true}
             />
-            <BidListCard
+            <ItemListCard
               image_url="images/no-image.png"
               title="Laptop Keyboard"
               listed_date="2022-10-10"

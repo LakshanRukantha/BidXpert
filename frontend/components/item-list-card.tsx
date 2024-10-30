@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Eye, Gift, Pencil, Trash } from "lucide-react";
 import Link from "next/link";
 
-const BidListCard = ({
+const ItemListCard = ({
   image_url,
   title,
   listed_date,
@@ -78,4 +78,4 @@ const BidListCard = ({
   );
 };
 
-export default BidListCard;
+export default ItemListCard;
