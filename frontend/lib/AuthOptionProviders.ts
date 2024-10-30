@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { User } from "next-auth";
 import axios from "axios";
+import bcrypt from "bcryptjs";
 
 // Disable SSL verification in development only
 if (process.env.NODE_ENV === "development") {
@@ -52,18 +53,29 @@ const credentialsAuth = CredentialsProvider({
 
     // Try to authenticate the user and return the user object
     try {
-      // Mock API call to check if the user exists and the password is correct
       const response = await axios.post(`${BACKEND_URL}/api/user/signin`, {
         firstname: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED firstname)
         lastname: "", // TODO: FIX THIS IN THE BACKEND (NOT NEEDED lastname)
         email,
-        password,
+        password: "",
       });
 
-      const user = response.data;
+      const user = await response.data;
+
+      console.table(user);
 
       // Check if the user exists
       if (response.status !== 200) {
+        return null;
+      }
+
+      if (typeof user.password !== "string") {
+        return null;
+      }
+
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+      if (!isPasswordMatch) {
         return null;
       }
 

@@ -22,6 +22,14 @@ const TransactionsPopup = ({
         const { data } = res.data;
         setTransactions(data);
         console.log(data);
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          console.log("No transactions found for this user.");
+          setTransactions([]);
+        } else {
+          console.error("An error occurred:", error.message);
+        }
       });
   }, [user_id]);
 
