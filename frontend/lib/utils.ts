@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -18,7 +18,13 @@ export function getFirstLetters(input: string) {
   return firstLetters[0] + firstLetters[1];
 }
 
+// catch all function for handling errors
 export async function getCategories() {
-  const res = await axios.get(`${backendUrl}/api/categories/all`);
-  return res.data;
+  try {
+    const res = await axios.get(`${backendUrl}/api/categories/all`);
+    return res.data;
+  } catch (error: any) {
+    console.error("Error fetching categories:", error.message);
+    return [];
+  }
 }

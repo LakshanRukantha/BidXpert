@@ -16,7 +16,6 @@ const NotificationsPopup = ({
     setIsOpen(true);
   };
 
-  console.log(user_id);
   return (
     <>
       <div onMouseDown={handleOpen}>{children}</div>

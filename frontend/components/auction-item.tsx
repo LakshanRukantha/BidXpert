@@ -84,40 +84,42 @@ export default function AuctionItem({
         <div className="bg-secondary p-1 px-2 rounded-md mb-2">
           <div className="flex flex-row gap-2 items-center">
             <h3 className="flex-1 text-nowrap">Current Bid: {high_bid}</h3>
-            <h3 className="line-clamp-1 text-sm text-slate-500">
+            {/* <h3 className="line-clamp-1 text-sm text-slate-500">
               By L. Rukantha
-            </h3>
+            </h3> */}
           </div>
           <hr className="bg-slate-800" />
           <h3>Starting Bid: {start_bid}</h3>
         </div>
-        <div className="flex flex-row gap-2">
-          <Input
-            placeholder="Enter Bid Amount"
-            min={high_bid}
-            onChange={(e) => setBidAmount(Number(e.target.value))}
-            type="number"
-            value={bidAmount}
-          />
+        {session.data?.user.id !== lister_id && (
           <div className="flex flex-row gap-2">
-            <Button
-              onClick={() => {
-                if (bidAmount - 500 >= high_bid) {
-                  setBidAmount(bidAmount - 500);
-                }
-              }}
-              variant={"secondary"}
-            >
-              -500
-            </Button>
-            <Button
-              onClick={() => setBidAmount(bidAmount + 500)}
-              variant={"secondary"}
-            >
-              +500
-            </Button>
+            <Input
+              placeholder="Enter Bid Amount"
+              min={high_bid}
+              onChange={(e) => setBidAmount(Number(e.target.value))}
+              type="number"
+              defaultValue={bidAmount + 500}
+            />
+            <div className="flex flex-row gap-2">
+              <Button
+                onClick={() => {
+                  if (bidAmount - 500 >= high_bid) {
+                    setBidAmount(bidAmount - 500);
+                  }
+                }}
+                variant={"secondary"}
+              >
+                -500
+              </Button>
+              <Button
+                onClick={() => setBidAmount(bidAmount + 500)}
+                variant={"secondary"}
+              >
+                +500
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
       <CardFooter className="flex flex-row gap-2">
         <Dialog>
@@ -176,7 +178,7 @@ export default function AuctionItem({
           <Button
             className="flex-1 w-full"
             disabled={
-              bidAmount <= high_bid && lister_id === session.data?.user?.id
+              bidAmount <= high_bid || lister_id === session.data?.user?.id
             }
             onClick={async () => {
               try {

@@ -55,7 +55,7 @@ const CreateAuction = () => {
 
   useEffect(() => {
     getCategories().then((data) => {
-      setCategories(data.data);
+      setCategories(data.data ? data.data : []);
     });
   }, [session]);
 

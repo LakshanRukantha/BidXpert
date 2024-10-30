@@ -79,7 +79,7 @@ export default function SideBar({
 
   useEffect(() => {
     getCategories().then((data) => {
-      setCategories(data.data);
+      setCategories(data.data ? data.data : []);
     });
   }, [session]);
   const data = {
@@ -101,10 +101,13 @@ export default function SideBar({
         url: "",
         icon: List,
         isActive: true,
-        items: categories.map((category: CategoryProps) => ({
-          title: category.name,
-          url: `?category=${category.value}`,
-        })),
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
       },
     ],
     navUserProtected: [
@@ -139,10 +142,13 @@ export default function SideBar({
         url: "",
         isActive: false,
         icon: List,
-        items: categories.map((category: CategoryProps) => ({
-          title: category.name,
-          url: `?category=${category.value}`,
-        })),
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
       },
     ],
     navAdminProtected: [
@@ -173,10 +179,13 @@ export default function SideBar({
         url: "",
         isActive: false,
         icon: List,
-        items: categories.map((category: CategoryProps) => ({
-          title: category.name,
-          url: `?category=${category.value}`,
-        })),
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
       },
     ],
     navSecondary: [
@@ -201,12 +210,6 @@ export default function SideBar({
       ? data.navAdminProtected
       : data.navUserProtected
     : data.navMain;
-
-  useEffect(() => {
-    getCategories().then((data) => {
-      setCategories(data.data);
-    });
-  }, [session]);
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">

@@ -21,7 +21,6 @@ const TransactionsPopup = ({
       .then((res) => {
         const { data } = res.data;
         setTransactions(data);
-        console.log(data);
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {

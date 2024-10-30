@@ -94,7 +94,7 @@ const ManageAuctions = () => {
 
   useEffect(() => {
     getCategories().then((data) => {
-      setCategories(data.data);
+      setCategories(data.data ? data.data : []);
     });
   }, [session]);
 
@@ -176,14 +176,15 @@ const ManageAuctions = () => {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Categories</SelectLabel>
-              {categories.map((category: CategoryProps) => (
-                <SelectItem
-                  key={category.category_id}
-                  value={category.category_id.toString()}
-                >
-                  {category.name}
-                </SelectItem>
-              ))}
+              {categories.length > 0 &&
+                categories.map((category: CategoryProps) => (
+                  <SelectItem
+                    key={category.category_id}
+                    value={category.category_id.toString()}
+                  >
+                    {category.name}
+                  </SelectItem>
+                ))}
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -285,14 +286,15 @@ const ManageAuctions = () => {
                           <SelectContent>
                             <SelectGroup>
                               <SelectLabel>Categories</SelectLabel>
-                              {categories.map((category: CategoryProps) => (
-                                <SelectItem
-                                  key={category.category_id}
-                                  value={category.category_id.toString()}
-                                >
-                                  {category.name}
-                                </SelectItem>
-                              ))}
+                              {categories.length > 0 &&
+                                categories.map((category: CategoryProps) => (
+                                  <SelectItem
+                                    key={category.category_id}
+                                    value={category.category_id.toString()}
+                                  >
+                                    {category.name}
+                                  </SelectItem>
+                                ))}
                             </SelectGroup>
                           </SelectContent>
                         </Select>
