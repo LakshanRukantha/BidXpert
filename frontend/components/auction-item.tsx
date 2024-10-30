@@ -28,6 +28,8 @@ import sendEmailNotification from "@/lib/bid-mail-sender";
 import { AuctionItemProps } from "@/types/types";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { toast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function AuctionItem({
   name,
@@ -41,6 +43,8 @@ export default function AuctionItem({
   lister_id,
 }: AuctionItemProps) {
   const session = useSession();
+  const router = useRouter();
+  const user = session.data?.user;
   const [listerEmail, setListerEmail] = useState<string>("");
   const [bidAmount, setBidAmount] = useState<number>(high_bid);
 
@@ -51,6 +55,61 @@ export default function AuctionItem({
       setListerEmail(data.email);
     });
   }, [lister_id]);
+
+  const handlePlaceBid = async (bid: {
+    amount: number;
+    placed_on: string;
+    auction_id: number;
+    bidder_id: number;
+  }) => {
+    try {
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "You need to sign in to place a bid.",
+        });
+        router.push("/signin");
+        return;
+      } else if (bid.amount < high_bid) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "Bid amount should be greater than the current highest bid.",
+        });
+        return;
+      }
+      await axios
+        .post("https://localhost:7174/api/bid/create", bid)
+        .then(() => {
+          setBidAmount(bid.amount);
+          toast({
+            variant: "default",
+            title: "Success",
+            description: "Bid placed successfully.",
+          });
+        });
+      await sendEmailNotification({
+        auctionListerEmail: listerEmail,
+        auctionListerName: listerName,
+        bidderEmail: session.data?.user?.email as string,
+        bidderName: session.data?.user?.name as string,
+        bidderId: session.data?.user?.id as number,
+        expiresOn: new Date(end_date),
+        itemId: auction_id,
+        itemName: name,
+        bidAmount: bidAmount,
+      });
+    } catch (error) {
+      console.error("Error placing bid:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error placing bid.",
+      });
+    }
+  };
 
   return (
     <Card className="p-2 max-w-72 flex flex-col justify-between w-full">
@@ -177,21 +236,13 @@ export default function AuctionItem({
         {lister_id !== session.data?.user?.id && (
           <Button
             className="flex-1 w-full"
-            disabled={
-              bidAmount <= high_bid || lister_id === session.data?.user?.id
-            }
             onClick={async () => {
               try {
-                await sendEmailNotification({
-                  auctionListerEmail: listerEmail,
-                  auctionListerName: listerName,
-                  bidderEmail: session.data?.user?.email as string,
-                  bidderName: session.data?.user?.name as string,
-                  bidderId: session.data?.user?.id as number,
-                  expiresOn: new Date(end_date),
-                  itemId: auction_id,
-                  itemName: name,
-                  bidAmount: bidAmount,
+                await handlePlaceBid({
+                  amount: bidAmount,
+                  placed_on: new Date().toISOString(),
+                  auction_id: auction_id,
+                  bidder_id: session.data?.user?.id as number,
                 });
               } catch (error) {
                 console.error(error);
