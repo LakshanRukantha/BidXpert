@@ -25,6 +25,7 @@ export type AuctionMailParameters = {
   auctionListerEmail: string;
   bidderName: string;
   bidderEmail: string;
+  bidderId: number;
   itemId: number;
   itemName: string;
   bidAmount: number;
