@@ -61,6 +61,7 @@ export default function AuctionItem({
     placed_on: string;
     auction_id: number;
     bidder_id: number;
+    status: string;
   }) => {
     try {
       if (!user) {
@@ -243,6 +244,7 @@ export default function AuctionItem({
                   placed_on: new Date().toISOString(),
                   auction_id: auction_id,
                   bidder_id: session.data?.user?.id as number,
+                  status: "active",
                 });
               } catch (error) {
                 console.error(error);
