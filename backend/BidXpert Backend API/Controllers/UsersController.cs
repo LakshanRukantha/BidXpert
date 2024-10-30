@@ -184,7 +184,7 @@ namespace BidXpert_Backend_API.Controllers
                                     Email = reader.GetString(1),
                                     Firstname = reader.GetString(2),
                                     Lastname = reader.GetString(3),
-                                    PasswordHasher = reader.GetString(4),
+                                    Password = reader.GetString(4),
                                     RegDate = reader.GetDateTime(5),
                                     IsAdmin = reader.GetBoolean(6)
                                 };
