@@ -164,6 +164,46 @@ namespace BidXpert_Backend_API.Controllers
             }
         }
 
-       
+        [HttpDelete("delete/{transactionId}")]
+        public IActionResult DeleteTransaction(int transactionId)
+        {
+            var response = new Response();
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+                {
+                    string query = "DELETE FROM [Transaction] WHERE Transaction_id = @TransactionId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@TransactionId", transactionId);
+
+                        con.Open();
+                        int result = cmd.ExecuteNonQuery();
+
+                        if (result > 0)
+                        {
+                            response.status = 200;
+                            response.message = "Transaction deleted successfully.";
+                            return Ok(response);
+                        }
+                        else
+                        {
+                            response.status = 404;
+                            response.message = "Transaction not found.";
+                            return NotFound(response);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                response.status = 500;
+                response.message = "Internal server error: " + ex.Message;
+                return StatusCode(500, response);
+            }
+        }
+
     }
 }
