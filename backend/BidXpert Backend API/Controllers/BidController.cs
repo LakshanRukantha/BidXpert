@@ -161,7 +161,7 @@ namespace BidXpert_Backend_API.Controllers
             }
         }
         [HttpDelete]
-        [Route("api/bid/delete/{bidId}")]
+        [Route("delete/{bidId}")]
         public async Task<IActionResult> DeleteBid(int bidId)
         {
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
