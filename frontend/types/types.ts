@@ -25,6 +25,7 @@ export type AuctionMailParameters = {
   auctionListerEmail: string;
   bidderName: string;
   bidderEmail: string;
+  bidderId: number;
   itemId: number;
   itemName: string;
   bidAmount: number;
@@ -39,6 +40,22 @@ export type MailOptions = {
   text: string;
 };
 
+export type AuctionItemProps = {
+  auction_id: number;
+  name: string;
+  description: string;
+  end_date: string;
+  start_bid: number;
+  high_bid: number;
+  image_url: string;
+  listed_on: string;
+  status: string;
+  lister_id: number;
+  category_id: number;
+  listerName: string;
+  categoryName: string;
+};
+
 export type CheckoutFormProps = {
   transactionProps: {
     title: string;
@@ -46,3 +63,19 @@ export type CheckoutFormProps = {
     date: Date;
   };
 };
+
+export type CategoryProps = {
+  category_id: number;
+  name: string;
+  value: string;
+};
+
+export type TransactionProps = {
+  transactionId: number;
+  title: string;
+  amount: number;
+  date: string;
+  status: string;
+  auctionId: number;
+  key: number;
+}

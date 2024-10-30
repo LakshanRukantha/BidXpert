@@ -13,9 +13,30 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import * as React from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { AuctionItemProps, CategoryProps } from "@/types/types";
+import { useSession } from "next-auth/react";
+import { getCategories } from "@/lib/utils";
 
 export default function Home() {
+  const session = useSession();
+  const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    axios.get("https://localhost:7174/api/auction/all").then((res) => {
+      const { data } = res.data;
+      setAuctions(data);
+      console.log(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data);
+    });
+  }, [session]);
+
   return (
     <div className="flex items-center flex-col">
       <div className="flex flex-col lg:flex-row gap-2 w-full mb-4">
@@ -26,10 +47,14 @@ export default function Home() {
           <SelectContent>
             <SelectGroup>
               <SelectLabel>Categories</SelectLabel>
-              <SelectItem value="vehicles">Vehicles</SelectItem>
-              <SelectItem value="home">Home & Property</SelectItem>
-              <SelectItem value="electronics">Electronics</SelectItem>
-              <SelectItem value="fashion">Fashion</SelectItem>
+              {categories.map((category: CategoryProps) => (
+                <SelectItem
+                  key={category.category_id}
+                  value={category.category_id.toString()}
+                >
+                  {category.name}
+                </SelectItem>
+              ))}
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -40,12 +65,26 @@ export default function Home() {
         </Button>
       </div>
       <div className="grid w-full gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
-        <AuctionItem />
+        {auctions.map((auction) => {
+          return (
+            <AuctionItem
+              key={auction.auction_id}
+              name={auction.name}
+              description={auction.description}
+              end_date={auction.end_date}
+              start_bid={auction.start_bid}
+              auction_id={auction.auction_id}
+              categoryName={auction.categoryName}
+              category_id={auction.category_id}
+              high_bid={auction.high_bid}
+              image_url={auction.image_url}
+              listed_on={auction.listed_on}
+              status={auction.status}
+              listerName={auction.listerName}
+              lister_id={auction.lister_id}
+            />
+          );
+        })}
       </div>
     </div>
   );

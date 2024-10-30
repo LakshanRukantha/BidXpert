@@ -12,6 +12,14 @@ import { RegistrationInputs } from "@/types/types";
 import { useToast } from "@/hooks/use-toast";
 import { CircleAlert } from "lucide-react";
 import signUpValidationSchema from "@/schemas/SignUpValidationSchema";
+import axios from "axios";
+import bcrypt from "bcryptjs";
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+if (!backendUrl) {
+  throw new Error("Backend URL is not defined");
+}
 
 const SignUp = () => {
   const toast = useToast().toast;
@@ -31,17 +39,20 @@ const SignUp = () => {
   const { errors, isSubmitting } = formState;
 
   const onSubmit: SubmitHandler<RegistrationInputs> = async (data) => {
+    // Hash the password before sending it to the backend
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    data.password = hashedPassword;
     try {
-      // const response = await fetch("/api/register", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(data),
-      // });
-      // const result = await response.json();
-      console.log(data);
-      if (data) {
+      const response = await axios.post(`${backendUrl}/api/user/signup`, {
+        firstname: data.f_name,
+        lastname: data.l_name,
+        email: data.email,
+        password: hashedPassword,
+        regDate: new Date(),
+        isAdmin: false,
+      });
+
+      if (response.status === 200) {
         reset();
         toast({
           variant: "default",
@@ -49,9 +60,32 @@ const SignUp = () => {
           description: "You have successfully registered. Please sign in.",
         });
       } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An error occurred. Please try again later.",
+        });
       }
     } catch (error) {
-      console.log(error);
+      if (axios.isAxiosError(error)) {
+        // Handle Axios error
+        console.log(error.response?.data);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            error.response?.data?.message ||
+            "An error occurred. Please try again later.",
+        });
+      } else {
+        // Handle other errors
+        console.log(error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "An unexpected error occurred. Please try again later.",
+        });
+      }
     }
   };
 

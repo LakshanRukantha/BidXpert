@@ -1,10 +1,16 @@
 import { AuctionMailParameters, MailOptions } from "@/types/types";
+// import axios from "axios";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
 const user = process.env.EMAIL;
 const pass = process.env.PASSWORD;
 const domain = process.env.NEXT_PUBLIC_URL;
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+if (!backendUrl) {
+  throw new Error("Backend URL is not defined");
+}
 
 if (!user || !pass || !domain) {
   throw new Error("Missing required environment variables.");
@@ -25,6 +31,7 @@ export async function POST(request: Request) {
       auctionListerEmail,
       bidderName,
       bidderEmail,
+      // bidderId,
       itemId,
       itemName,
       bidAmount,
