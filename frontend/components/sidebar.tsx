@@ -352,7 +352,7 @@ export default function SideBar({
                         <BadgeCheck />
                         Account
                       </DropdownMenuItem>
-                      <TransactionsPopup user_id={"1"}>
+                      <TransactionsPopup user_id={session.data.user.id}>
                         <DropdownMenuItem>
                           <CreditCard />
                           Transactions

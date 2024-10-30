@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Card,
@@ -44,6 +44,7 @@ import { Textarea } from "./ui/textarea";
 import sendEmailNotification from "@/lib/bid-mail-sender";
 import { AuctionItemProps } from "@/types/types";
 import { useSession } from "next-auth/react";
+import axios from "axios";
 
 export default function AuctionItem({
   name,
@@ -57,9 +58,18 @@ export default function AuctionItem({
   lister_id,
 }: AuctionItemProps) {
   const session = useSession();
-  const { toast } = useToast();
   const [date, setDate] = useState<Date>();
+  const [listerEmail, setListerEmail] = useState<string>("");
   const [bidAmount, setBidAmount] = useState<number>(high_bid);
+
+  // get lister email from lister id
+  useEffect(() => {
+    axios.get(`https://localhost:7174/api/user/${lister_id}`).then((res) => {
+      const { data } = res.data;
+      setListerEmail(data.email);
+    });
+  }, [lister_id]);
+
   return (
     <Card className="p-2 max-w-72 w-full">
       <CardHeader>
@@ -232,21 +242,21 @@ export default function AuctionItem({
             bidAmount <= high_bid && lister_id === session.data?.user?.id
           }
           onClick={async () => {
-            toast({
-              variant: "default",
-              title: "This is a title",
-              description: "This is a description",
-            });
-            await sendEmailNotification({
-              auctionListerEmail: "rukanthalakshan@gmail.com",
-              auctionListerName: "Lakshan Rukantha",
-              bidderEmail: "test@gmail.com",
-              bidderName: "Test User",
-              expiresOn: new Date(end_date),
-              itemId: auction_id,
-              itemName: name,
-              bidAmount: bidAmount,
-            });
+            try {
+              await sendEmailNotification({
+                auctionListerEmail: listerEmail,
+                auctionListerName: listerName,
+                bidderEmail: session.data?.user?.email as string,
+                bidderName: session.data?.user?.name as string,
+                bidderId: session.data?.user?.id as number,
+                expiresOn: new Date(end_date),
+                itemId: auction_id,
+                itemName: name,
+                bidAmount: bidAmount,
+              });
+            } catch (error) {
+              console.error(error);
+            }
           }}
         >
           Place Bid

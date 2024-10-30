@@ -1,3 +1,4 @@
+import { toast } from "@/hooks/use-toast";
 import axios from "axios";
 
 const sendEmailNotification = async ({
@@ -5,6 +6,7 @@ const sendEmailNotification = async ({
   auctionListerEmail,
   bidderName,
   bidderEmail,
+  bidderId,
   itemId,
   itemName,
   bidAmount,
@@ -14,6 +16,7 @@ const sendEmailNotification = async ({
   auctionListerEmail: string;
   bidderName: string;
   bidderEmail: string;
+  bidderId: number;
   itemId: number;
   itemName: string;
   bidAmount: number;
@@ -26,6 +29,7 @@ const sendEmailNotification = async ({
         auctionListerEmail,
         bidderName,
         bidderEmail,
+        bidderId,
         itemId,
         itemName,
         bidAmount,
@@ -33,6 +37,11 @@ const sendEmailNotification = async ({
       })
       .then((response) => {
         console.log(response.data);
+        toast({
+          variant: "default",
+          title: "Success",
+          description: "Your bid has been placed successfully.",
+        });
       });
   } catch (error) {
     console.error(error);
