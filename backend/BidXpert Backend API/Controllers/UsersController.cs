@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BidXpert_Backend_API.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace BidXpert_Backend_API.Controllers
 {
@@ -165,12 +166,12 @@ namespace BidXpert_Backend_API.Controllers
                 using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
                 {
                    
-                    string query = "SELECT User_id, Email, Firstname, Lastname, Reg_date, Is_admin FROM [User] WHERE Email = @Email AND Password = @Password";
+                    string query = "SELECT User_id, Email, Firstname, Lastname,Password, Reg_date, Is_admin FROM [User] WHERE Email = @Email ";
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
                         cmd.Parameters.AddWithValue("@Email", user.Email);
-                        cmd.Parameters.AddWithValue("@Password", user.Password);
+
 
                         con.Open();
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
@@ -183,15 +184,16 @@ namespace BidXpert_Backend_API.Controllers
                                     Email = reader.GetString(1),
                                     Firstname = reader.GetString(2),
                                     Lastname = reader.GetString(3),
-                                    RegDate = reader.GetDateTime(4),
-                                    IsAdmin = reader.GetBoolean(5)
+                                    PasswordHasher = reader.GetString(4),
+                                    RegDate = reader.GetDateTime(5),
+                                    IsAdmin = reader.GetBoolean(6)
                                 };
 
                                 return Ok(response);
                             }
                             else
                             {
-                                var response = new Response { status = 401, message = "Login failed: incorrect email or password." };
+                                var response = new Response { status = 401, message = "Login failed: incorrect email " };
                                 return Unauthorized(response);
                             }
                         }
@@ -211,16 +213,15 @@ namespace BidXpert_Backend_API.Controllers
         [Route("update{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
-
             if (user.UserId != id)
             {
                 return BadRequest(new Response { status = 400, message = "User ID in the body must match the ID in the URL." });
             }
 
-
-            if (string.IsNullOrWhiteSpace(user.Email))
+       
+            if (string.IsNullOrWhiteSpace(user.Firstname) && string.IsNullOrWhiteSpace(user.Lastname) && string.IsNullOrWhiteSpace(user.Email))
             {
-                return BadRequest(new Response { status = 400, message = "The Email field is required." });
+                return BadRequest(new Response { status = 400, message = "At least one field (Firstname, Lastname, or Email) must be provided for update." });
             }
 
             try
@@ -235,51 +236,50 @@ namespace BidXpert_Backend_API.Controllers
                         updates.Add("Firstname = @Firstname");
                         parameters.Add(new SqlParameter("@Firstname", user.Firstname));
                     }
-
                     if (!string.IsNullOrWhiteSpace(user.Lastname))
                     {
                         updates.Add("Lastname = @Lastname");
                         parameters.Add(new SqlParameter("@Lastname", user.Lastname));
                     }
-
-
-                    updates.Add("Email = @Email");
-                    parameters.Add(new SqlParameter("@Email", user.Email));
-
-                    if (updates.Count == 0)
+                    if (!string.IsNullOrWhiteSpace(user.Email))
                     {
-                        return BadRequest(new Response { status = 400, message = "At least one field must be updated." });
+                        updates.Add("Email = @Email");
+                        parameters.Add(new SqlParameter("@Email", user.Email));
                     }
 
-                    string query = $"UPDATE [User] SET {string.Join(", ", updates)} WHERE User_id = @UserId";
-                    parameters.Add(new SqlParameter("@UserId", user.UserId));
-
-                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    if (updates.Count > 0)
                     {
-                        cmd.Parameters.AddRange(parameters.ToArray());
+                        string query = $"UPDATE [User] SET {string.Join(", ", updates)} WHERE User_id = @UserId";
+                        parameters.Add(new SqlParameter("@UserId", user.UserId));
 
-                        con.Open();
-                        int result = await cmd.ExecuteNonQueryAsync();
+                        using (SqlCommand cmd = new SqlCommand(query, con))
+                        {
+                            cmd.Parameters.AddRange(parameters.ToArray());
+                            con.Open();
+                            int result = await cmd.ExecuteNonQueryAsync();
 
-                        if (result > 0)
-                        {
-                            var response = new Response { status = 200, message = "User updated successfully." };
-                            return Ok(response);
+                            if (result > 0)
+                            {
+                                return Ok(new Response { status = 200, message = "User updated successfully." });
+                            }
+                            else
+                            {
+                                return NotFound(new Response { status = 404, message = "User not found." });
+                            }
                         }
-                        else
-                        {
-                            var response = new Response { status = 404, message = "User not found or no updates made." };
-                            return NotFound(response);
-                        }
+                    }
+                    else
+                    {
+                        return BadRequest(new Response { status = 400, message = "No valid fields provided for update." });
                     }
                 }
             }
             catch (Exception ex)
             {
-                var response = new Response { status = 500, message = "Internal server error: " + ex.Message };
-                return StatusCode(500, response);
+                return StatusCode(500, new Response { status = 500, message = "Internal server error: " + ex.Message });
             }
         }
+
 
 
         [HttpDelete]
