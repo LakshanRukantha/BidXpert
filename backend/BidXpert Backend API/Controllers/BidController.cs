@@ -162,5 +162,30 @@ namespace BidXpert_Backend_API.Controllers
                     }
                 }
             }
-    }
+            [HttpDelete]
+            [Route("delete/{bidId}")]
+            public async Task<IActionResult> DeleteBid(int bidId)
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("BidXpertAppCon")))
+                {
+                    await con.OpenAsync();
+
+                    string query = "DELETE FROM Bid WHERE Bid_id = @BidId";
+
+                    using (SqlCommand cmd = new SqlCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@BidId", bidId);
+
+                        int rowsAffected = await cmd.ExecuteNonQueryAsync();
+
+                        if (rowsAffected == 0)
+                        {
+                            return NotFound(new { status = 404, message = "Bid not found." });
+                        }
+                    }
+                }
+
+                return Ok(new { status = 200, message = "Bid deleted successfully." });
+            }
+        }
 }
