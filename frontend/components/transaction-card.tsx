@@ -7,7 +7,7 @@ import { TransactionProps } from "@/types/types";
 import { format } from "date-fns";
 
 export default function TransactionCard({
-  title,
+  transaction_id,
   amount,
   date,
   status,
@@ -15,7 +15,7 @@ export default function TransactionCard({
 }: TransactionProps) {
   return (
     <Card className="p-4 flex flex-row justify-between items-center">
-      <h2>{title}</h2>
+      <h2>#TID000{transaction_id}</h2>
       <p>${amount}</p>
       <p>
         {format(new Date(date), "dd/MM/yyyy")}

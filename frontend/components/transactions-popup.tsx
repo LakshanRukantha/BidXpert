@@ -55,7 +55,7 @@ const TransactionsPopup = ({
                 amount={transaction.amount}
                 date={transaction.date}
                 status={transaction.status}
-                title={transaction.title || "No title"}
+                transaction_id={transaction.transactionId}
                 auctionId={transaction.auctionId}
                 key={transaction.transactionId}
               />

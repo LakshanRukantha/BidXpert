@@ -74,7 +74,7 @@ export type CategoryProps = {
 
 export type TransactionProps = {
   transactionId: number;
-  title: string;
+  transaction_id: number;
   amount: number;
   date: string;
   status: string;
