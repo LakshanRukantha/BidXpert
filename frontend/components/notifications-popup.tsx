@@ -21,7 +21,7 @@ const NotificationsPopup = ({
   user_id: string;
   children: React.ReactNode;
 }) => {
-  console.log("user_id", user_id);
+
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 

@@ -69,7 +69,6 @@ const SignUp = () => {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Handle Axios error
-        console.log(error.response?.data);
         toast({
           variant: "destructive",
           title: "Error",

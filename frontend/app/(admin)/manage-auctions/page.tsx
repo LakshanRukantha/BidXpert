@@ -88,7 +88,6 @@ const ManageAuctions = () => {
       const { data } = res.data;
       setAuctions(data);
       setLoading(false);
-      console.log(data);
     });
   }, []);
 
@@ -435,7 +434,6 @@ const ManageAuctions = () => {
                           <Button
                             type="submit"
                             onClick={() => {
-                              console.log(editAuction);
                               handleAuctionUpdate(auction.auction_id);
                             }}
                           >

@@ -31,5 +31,7 @@ export const sendInSiteNotification = async (
 
     await bidPlacedNotification();
     await bidReceivedNotification();
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error sending in-site notifications:", error);
+  }
 };

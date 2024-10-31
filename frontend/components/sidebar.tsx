@@ -154,7 +154,7 @@ export default function SideBar({
     navAdminProtected: [
       {
         title: "Admin Dashboard",
-        url: "/admin-dashboard",
+        url: "",
         icon: LayoutDashboard,
         isActive: true,
         items: [

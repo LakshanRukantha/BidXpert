@@ -77,7 +77,11 @@ if (!backendUrl) {
 
 const Account = () => {
   const session = useSession();
-  const user = session.data?.user;
+  const [editUser, setEditUser] = useState<{
+    firstname: string;
+    lastname: string;
+    email: string;
+  }>({ firstname: "", lastname: "", email: "" });
   const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
   const [editAuction, setEditAuction] = useState({
     auction_id: 0,
@@ -92,6 +96,7 @@ const Account = () => {
     lister_id: 0,
     category_id: 0,
   });
+  const user = session.data?.user;
   const [categories, setCategories] = useState([]);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -101,6 +106,27 @@ const Account = () => {
   const { edgestore } = useEdgeStore();
   const [loading, setLoading] = useState<boolean>(true);
   const [bids, setBids] = useState([]);
+
+  const [displayUser, setDisplayUser] = useState({
+    firstname: "",
+    lastname: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    try {
+      if (session.data) {
+        axios
+          .get(`https://localhost:7174/api/user/${session.data.user.id}`)
+          .then((res) => {
+            const { data } = res.data;
+            setDisplayUser(data);
+          });
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }, [session.data?.user.id]);
 
   useEffect(() => {
     setLoading(true);
@@ -116,7 +142,6 @@ const Account = () => {
 
         setAuctions(filteredAuctions);
         setLoading(false);
-        console.log("Auctions: " + filteredAuctions);
       })
       .catch((error) => {
         console.error("Error fetching auctions:", error);
@@ -154,6 +179,43 @@ const Account = () => {
       setCategories(data.data ? data.data : []);
     });
   }, [session]);
+
+  const handleUserUpdate = async (user: {
+    firstname: string;
+    lastname: string;
+    email: string;
+  }) => {
+    try {
+      axios
+        .put(
+          `https://localhost:7174/api/user/update/${session.data?.user.id}`,
+          {
+            userId: session.data?.user.id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            email: user.email,
+            password: "",
+          }
+        )
+        .then((res) => {
+          if (res.status === 200) {
+            toast({
+              variant: "default",
+              title: "Success 🎉",
+              description: "User updated successfully",
+            });
+          }
+          setDisplayUser(user);
+        });
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred. Please try again later",
+      });
+    }
+  };
 
   const handleAuctionUpdate = async (auction_id: number) => {
     try {
@@ -228,21 +290,95 @@ const Account = () => {
               {user?.role === "admin" && (
                 <Crown className="absolute -right-2 text-yellow-500 -top-5" />
               )}
-              <h2 className="text-xl font-semibold">{user?.name}</h2>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+              <h2 className="text-xl font-semibold">{`${displayUser.firstname} ${displayUser.lastname}`}</h2>
+              <p className="text-sm text-gray-500">{displayUser.email}</p>
             </div>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button className="ml-auto" variant={"outline"}>
-                    <Pencil />
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  className="ml-auto"
+                  variant={"outline"}
+                  onClick={() =>
+                    setEditUser({
+                      firstname: displayUser.firstname,
+                      lastname: displayUser.lastname,
+                      email: displayUser.email,
+                    })
+                  }
+                >
+                  <Pencil />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Your Details</DialogTitle>
+                  <DialogDescription>
+                    Make changes to your details here. Click save when you are
+                    done.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid py-4">
+                  <Label htmlFor="fName" className="mb-1">
+                    First Name
+                  </Label>
+                  <Input
+                    id="fName"
+                    defaultValue={displayUser.firstname}
+                    onChange={(e) =>
+                      setEditUser((prevUser) => ({
+                        ...prevUser,
+                        firstName: e.target.value,
+                      }))
+                    }
+                    name="fName"
+                    placeholder="Enter user's first name"
+                    className="mb-2"
+                  />
+                  <Label htmlFor="lName" className="mb-1">
+                    Last Name
+                  </Label>
+                  <Input
+                    id="lName"
+                    defaultValue={displayUser.lastname}
+                    onChange={(e) =>
+                      setEditUser((prevUser) => ({
+                        ...prevUser,
+                        lastName: e.target.value,
+                      }))
+                    }
+                    name="lName"
+                    placeholder="Enter user's last name"
+                    className="mb-2"
+                  />
+                  <Label htmlFor="email" className="mb-1">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    defaultValue={displayUser.email}
+                    onChange={(e) =>
+                      setEditUser((prevUser) => ({
+                        ...prevUser,
+                        email: e.target.value,
+                      }))
+                    }
+                    name="email"
+                    placeholder="Enter email address"
+                    className="mb-2"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="submit"
+                    onClick={() => handleUserUpdate(editUser)}
+                  >
+                    <Save />
+                    Save changes
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit Profile</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
           <Separator className="my-2" />
           <Label htmlFor="fullName" className="text-lg">
@@ -546,7 +682,6 @@ const Account = () => {
                               <Button
                                 type="submit"
                                 onClick={() => {
-                                  console.log(editAuction);
                                   handleAuctionUpdate(auction.auction_id);
                                 }}
                               >

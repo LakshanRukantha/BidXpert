@@ -65,9 +65,6 @@ const BidListCard = ({
                 variant={"default"}
                 size={"sm"}
                 className="bg-green-500 hover:bg-green-600 text-white"
-                onClick={() =>
-                  console.log(title + " Claim Successful at " + new Date())
-                }
               >
                 <Gift />
                 Claim Now
