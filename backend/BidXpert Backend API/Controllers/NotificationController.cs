@@ -124,7 +124,7 @@ namespace BidXpert_Backend_API.Controllers
         }
 
         [HttpDelete("delete/{id}")]
-        public IActionResult DeleteNotification(int notificationId)
+        public IActionResult DeleteNotification(int id)
         {
             var response = new Response();
 
@@ -136,7 +136,7 @@ namespace BidXpert_Backend_API.Controllers
 
                     using (SqlCommand cmd = new SqlCommand(query, con))
                     {
-                        cmd.Parameters.AddWithValue("@NotificationId", notificationId);
+                        cmd.Parameters.AddWithValue("@NotificationId", id);
 
                         con.Open();
                         int result = cmd.ExecuteNonQuery();
