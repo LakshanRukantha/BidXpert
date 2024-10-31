@@ -57,8 +57,10 @@ export type AuctionItemProps = {
 };
 
 export type CheckoutFormProps = {
-  transactionProps: {
-    title: string;
+  transactionInfo: {
+    status: string;
+    auctionId: number;
+    userId: number;
     amount: number;
     date: Date;
   };
@@ -78,4 +80,4 @@ export type TransactionProps = {
   status: string;
   auctionId: number;
   key: number;
-}
+};

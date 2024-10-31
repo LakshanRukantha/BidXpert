@@ -9,8 +9,12 @@ import {
 import convertToSubcurrency from "@/lib/ConvertToSubCurrency";
 import { Button } from "@/components/ui/button";
 import { CheckoutFormProps } from "@/types/types";
+import axios from "axios";
+import { toast } from "@/hooks/use-toast";
+import { useSession } from "next-auth/react";
 
-const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
+const CheckoutForm = ({ transactionInfo }: CheckoutFormProps) => {
+  const session = useSession();
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState<string>();
@@ -18,14 +22,14 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (transactionProps.amount > 0) {
+    if (transactionInfo.amount > 0 || transactionInfo.amount !== null) {
       fetch("/api/create-payment-intent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount: convertToSubcurrency(transactionProps.amount),
+          amount: convertToSubcurrency(transactionInfo.amount),
         }),
       })
         .then((res) => res.json())
@@ -34,7 +38,33 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
           setErrorMessage(`Failed to create payment intent. Error: ${error}`)
         );
     }
-  }, [transactionProps.amount]);
+  }, [transactionInfo.amount]);
+
+  const handleMakeTranscation = async () => {
+    try {
+      await axios.post(`https://localhost:7174/api/transactions/add`, {
+        date: new Date(),
+        amount: transactionInfo.amount,
+        status: "paid",
+        auctionId: transactionInfo.auctionId,
+        userId: session.data?.user.id || transactionInfo.userId,
+      });
+      await axios.put(
+        `https://localhost:7174/api/auction/${transactionInfo.auctionId}`,
+        {
+          auction_id: transactionInfo.auctionId,
+          status: "sold",
+        }
+      );
+      toast({
+        variant: "default",
+        title: "Success",
+        description: "Transaction made successfully",
+      });
+    } catch (error) {
+      console.error("Error making transaction:", error);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,7 +86,7 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `http://localhost:3000/payment-success?amount=${transactionProps.amount}`,
+        return_url: `http://localhost:3000/payment-success?amount=${transactionInfo.amount}`,
       },
     });
 
@@ -68,7 +98,7 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
       // The payment UI automatically closes with a success animation.
       // Your customer is redirected to your `return_url`.
     }
-
+    await handleMakeTranscation();
     setLoading(false);
   };
 
@@ -89,7 +119,7 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-md">
-      {clientSecret && transactionProps.amount > 0 && <PaymentElement />}
+      {clientSecret && transactionInfo.amount > 0 && <PaymentElement />}
 
       {errorMessage && <div>{errorMessage}</div>}
 
@@ -97,8 +127,9 @@ const CheckoutForm = ({ transactionProps }: CheckoutFormProps) => {
         variant={"default"}
         disabled={!stripe || loading}
         className="w-full bg-black hover:bg-black/90 text-white font-bold p-5 mt-4 disabled:opacity-50 disabled:animate-pulse"
+        onClick={async () => await handleMakeTranscation()}
       >
-        {!loading ? `Pay $${transactionProps.amount}` : "Processing..."}
+        {!loading ? `Pay $${transactionInfo.amount}` : "Processing..."}
       </Button>
       <p className="text-xs mt-1 mb-3 text-slate-500">
         This is the final amount you’ll be charged. If everything looks good,

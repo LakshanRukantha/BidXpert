@@ -5,9 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
 import convertToSubcurrency from "@/lib/ConvertToSubCurrency";
+import { AuctionItemProps } from "@/types/types";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -17,35 +21,47 @@ if (process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY === undefined) {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY);
 
 const Checkout = () => {
-  const router = useRouter();
+  const session = useSession();
   const searchPageParams = useSearchParams();
+  const auction_id = searchPageParams.get("auction_id");
+  const [auction, setAuction] = useState<AuctionItemProps>();
   const [transactionInfo, setTransactionInfo] = useState({
-    title: "",
+    status: "paid",
+    auctionId: Number(auction_id),
+    userId: session.data?.user.id as number,
     amount: 0,
     date: new Date(),
   });
-  const title = searchPageParams.get("title");
-  const amount = Math.max(Number(searchPageParams.get("amount")), 0);
-
-  if (amount <= 0) {
-    router.push("/404");
-  }
 
   useEffect(() => {
-    setTransactionInfo({
-      title: title as string,
-      amount: amount,
-      date: new Date(),
-    });
-  }, [title, amount]);
+    try {
+      const fetchAuction = async () => {
+        await axios
+          .get(`https://localhost:7174/api/auction/${auction_id}`)
+          .then((res) => {
+            const { data } = res.data;
+            setAuction(data);
+            setTransactionInfo({
+              ...transactionInfo,
+              amount: data.high_bid,
+              auctionId: Number(data.auction_id),
+              date: new Date(),
+            });
+          });
+      };
+      fetchAuction();
+    } catch (error) {
+      console.error("Error fetching auction:", error);
+    }
+  }, [auction_id]);
 
   return (
     <div className=" w-full flex lg:items-center justify-center lg:min-h-full">
       <Card className="p-4 lg:-mt-12 flex flex-col max-w-4xl w-full lg:flex-row gap-4 lg:gap-2">
         <div className="flex flex-col flex-1">
           <h2 className="text-xl font-bold mb-2">Order Details</h2>
-          <Label className="text-base">Product: {transactionInfo.title}</Label>
-          <Label className="text-base">Amount: ${transactionInfo.amount}</Label>
+          <Label className="text-base">Product: {auction?.name}</Label>
+          <Label className="text-base">Amount: ${auction?.high_bid}</Label>
           <Separator className="my-2" />
           <div>
             <Label>Address</Label>
@@ -76,7 +92,7 @@ const Checkout = () => {
               currency: "usd",
             }}
           >
-            <CheckoutForm transactionProps={transactionInfo} />
+            <CheckoutForm transactionInfo={transactionInfo} />
           </Elements>
         </div>
       </Card>

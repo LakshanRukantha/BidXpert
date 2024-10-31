@@ -630,7 +630,6 @@ const Account = () => {
                               addSuffix: true,
                             }
                           )}
-                          status={bid.status}
                         />
                       )
                     )

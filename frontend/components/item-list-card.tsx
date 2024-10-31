@@ -12,17 +12,11 @@ const BidListCard = ({
   auction_id,
   title,
   placed_on,
-  status,
 }: {
   auction_id: number;
   title: string;
   placed_on: string;
-  status: string;
 }) => {
-  console.log("auction_id", auction_id);
-  console.log("title", title);
-  console.log("placed_on", placed_on);
-  console.log("status", status);
   const [auction, setAuction] = useState<AuctionItemProps>();
 
   useEffect(() => {
@@ -56,9 +50,9 @@ const BidListCard = ({
           <p className="text-xs text-slate-500">at {placed_on}</p>
         </div>
         <div className="flex gap-2 flex-row">
-          {status === "claimed" ? (
+          {auction?.status === "sold" ? (
             <Button variant={"default"} size={"sm"} disabled>
-              Claimed
+              Sold
             </Button>
           ) : (
             <Link
