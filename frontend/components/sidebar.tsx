@@ -14,7 +14,6 @@ import {
   LayoutDashboard,
   PackageSearch,
 } from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -59,151 +58,158 @@ import {
 } from "@/components/ui/sidebar";
 import ModeToggle from "./mode-toggle";
 import { Button } from "./ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import { getCategories, getFirstLetters } from "@/lib/utils";
+import NotificationsPopup from "./notifications-popup";
+import TransactionsPopup from "./transactions-popup";
+import { useEffect, useState } from "react";
+import { CategoryProps } from "@/types/types";
 
-function getFirstLetters(input: string) {
-  const words = input.split(" ");
-  const firstLetters = words.map((word: string) => word.charAt(0));
-  return firstLetters[0] + firstLetters[1];
-}
-
-const IS_LOGGED_IN = true;
-const IS_ADMIN = false;
-
-// Mock data for database emulation
-const categories = [
-  { id: 1, title: "Vehicles", url: "/categories/vehicles" },
-  { id: 2, title: "Home & Property", url: "/categories/home-property" },
-  { id: 3, title: "Electronics", url: "/categories/electronics" },
-  { id: 4, title: "Fashion", url: "/categories/fashion" },
-];
-
-const data = {
-  user: {
-    name: "Lakshan Rukantha",
-    email: "rukanthalakshan@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      // isActive: true,
-      items: [
-        // {
-        //   title: "Sub Menu 1",
-        //   url: "#",
-        // },
-      ],
-    },
-    {
-      title: "Categories",
-      url: "",
-      icon: List,
-      isActive: true,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navUserProtected: [
-    {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "My Bids",
-          url: "/my-bids",
-        },
-        {
-          title: "Create Auction",
-          url: "/create-auction",
-        },
-        {
-          title: "My Auctions",
-          url: "/my-auctions",
-        },
-      ],
-    },
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      items: [],
-    },
-    {
-      title: "Categories",
-      url: "",
-      isActive: false,
-      icon: List,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navAdminProtected: [
-    {
-      title: "Admin Dashboard",
-      url: "/admin-dashboard",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "Manage Auctions",
-          url: "manage-auctions",
-        },
-        {
-          title: "User Management",
-          url: "user-management",
-        },
-      ],
-    },
-    {
-      title: "Live Auctions",
-      url: "/",
-      icon: PackageSearch,
-      items: [],
-    },
-    {
-      title: "Categories",
-      url: "",
-      isActive: false,
-      icon: List,
-      items: categories.map((category) => ({
-        title: category.title,
-        url: category.url,
-      })),
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "/support",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Contact Us",
-      url: "/contact",
-      icon: Send,
-    },
-  ],
-};
-
-const navItems = IS_LOGGED_IN
-  ? IS_ADMIN
-    ? data.navAdminProtected
-    : data.navUserProtected
-  : data.navMain;
-
-export default function Page({
+export default function SideBar({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathName = usePathname();
+  const session = useSession();
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    getCategories().then((data) => {
+      setCategories(data.data ? data.data : []);
+    });
+  }, [session]);
+  const data = {
+    navMain: [
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        // isActive: true,
+        items: [
+          // {
+          //   title: "Sub Menu 1",
+          //   url: "#",
+          // },
+        ],
+      },
+      {
+        title: "Categories",
+        url: "",
+        icon: List,
+        isActive: true,
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
+      },
+    ],
+    navUserProtected: [
+      {
+        title: "Dashboard",
+        url: "",
+        icon: LayoutDashboard,
+        isActive: true,
+        items: [
+          {
+            title: "My Bids",
+            url: "/my-bids",
+          },
+          {
+            title: "Create Auction",
+            url: "/create-auction",
+          },
+          {
+            title: "My Auctions",
+            url: "/my-auctions",
+          },
+        ],
+      },
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        items: [],
+      },
+      {
+        title: "Categories",
+        url: "",
+        isActive: false,
+        icon: List,
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
+      },
+    ],
+    navAdminProtected: [
+      {
+        title: "Admin Dashboard",
+        url: "",
+        icon: LayoutDashboard,
+        isActive: true,
+        items: [
+          {
+            title: "Manage Auctions",
+            url: "manage-auctions",
+          },
+          {
+            title: "User Management",
+            url: "user-management",
+          },
+        ],
+      },
+      {
+        title: "Live Auctions",
+        url: "/",
+        icon: PackageSearch,
+        items: [],
+      },
+      {
+        title: "Categories",
+        url: "",
+        isActive: false,
+        icon: List,
+        items:
+          categories?.length > 0
+            ? categories.map((category: CategoryProps) => ({
+                title: category.name,
+                url: `?category=${category.value}`,
+              }))
+            : [],
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "/support",
+        icon: LifeBuoy,
+      },
+      {
+        title: "Contact Us",
+        url: "/contact",
+        icon: Send,
+      },
+    ],
+  };
+
+  const IS_LOGGED_IN = session && session.status === "authenticated";
+  const IS_ADMIN = IS_LOGGED_IN && session.data.user.role === "admin";
+
+  const navItems = IS_LOGGED_IN
+    ? IS_ADMIN
+      ? data.navAdminProtected
+      : data.navUserProtected
+    : data.navMain;
   return (
     <SidebarProvider>
       <Sidebar variant="sidebar">
@@ -299,20 +305,17 @@ export default function Page({
                       className="data-[state=open]:bg-accent data-[state=open]:text-sidebar-accent-foreground"
                     >
                       <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarImage
-                          src={data.user.avatar}
-                          alt={data.user.name}
-                        />
+                        <AvatarImage src={""} alt={session.data.user.name} />
                         <AvatarFallback className="rounded-lg">
-                          {getFirstLetters(data.user.name)}
+                          {getFirstLetters(session.data.user.name)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
-                          {data.user.name}
+                          {session.data.user.name}
                         </span>
                         <span className="truncate text-xs">
-                          {data.user.email}
+                          {session.data.user.email}
                         </span>
                       </div>
                       <ChevronsUpDown className="ml-auto size-4" />
@@ -327,41 +330,48 @@ export default function Page({
                     <DropdownMenuLabel className="p-0 font-normal">
                       <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                         <Avatar className="h-8 w-8 rounded-lg">
-                          <AvatarImage
-                            src={data.user.avatar}
-                            alt={data.user.name}
-                          />
+                          <AvatarImage src={""} alt={session.data.user.name} />
                           <AvatarFallback className="rounded-lg">
-                            {getFirstLetters(data.user.name)}
+                            {getFirstLetters(session.data.user.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-semibold">
-                            {data.user.name}
+                            {session.data.user.name}
                           </span>
                           <span className="truncate text-xs">
-                            {data.user.email}
+                            {session.data.user.email}
                           </span>
                         </div>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          router.push("/account");
+                        }}
+                      >
                         <BadgeCheck />
                         Account
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <CreditCard />
-                        Transactions
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Bell />
-                        Notifications
-                      </DropdownMenuItem>
+                      <TransactionsPopup user_id={session.data.user.id}>
+                        <DropdownMenuItem>
+                          <CreditCard />
+                          Transactions
+                        </DropdownMenuItem>
+                      </TransactionsPopup>
+                      <NotificationsPopup
+                        user_id={session.data.user.id.toString()}
+                      >
+                        <DropdownMenuItem>
+                          <Bell />
+                          Notifications
+                        </DropdownMenuItem>
+                      </NotificationsPopup>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => signOut()}>
                       <LogOut />
                       Log out
                     </DropdownMenuItem>
@@ -372,12 +382,16 @@ export default function Page({
           </SidebarFooter>
         ) : (
           <SidebarFooter className="flex flex-row gap-2">
-            <Button className="flex-1" size={"sm"}>
-              Sign Up
-            </Button>
-            <Button className="flex-1" size={"sm"} variant={"secondary"}>
-              Sign In
-            </Button>
+            <Link className="flex-1" href="/signup">
+              <Button className="w-full" size={"sm"}>
+                Sign Up
+              </Button>
+            </Link>
+            <Link className="flex-1" href="/signin">
+              <Button className="w-full" size={"sm"} variant={"secondary"}>
+                Sign In
+              </Button>
+            </Link>
           </SidebarFooter>
         )}
       </Sidebar>
@@ -391,7 +405,9 @@ export default function Page({
                 <BreadcrumbList>
                   <BreadcrumbSeparator className="hidden md:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>Live Auctions</BreadcrumbPage>
+                    <BreadcrumbPage>
+                      {pathName.toUpperCase().split("/")}
+                    </BreadcrumbPage>
                   </BreadcrumbItem>
                 </BreadcrumbList>
               </Breadcrumb>
