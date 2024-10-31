@@ -210,7 +210,7 @@ namespace BidXpert_Backend_API.Controllers
 
 
         [HttpPut]
-        [Route("update{id}")]
+        [Route("update/{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] User user)
         {
             if (user.UserId != id)
