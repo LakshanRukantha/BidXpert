@@ -8,6 +8,8 @@
         public int Auction_id { get; set; }
         public int Bidder_id { get; set; }
         public string? Auction_title { get; set; }
+        public DateTime? End_date { get; set; }
+        public decimal? High_bid { get; set; }
         public string? Status { get; set; }
 
     }

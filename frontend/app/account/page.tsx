@@ -55,7 +55,7 @@ import { useEdgeStore } from "@/lib/edgestore";
 import { getCategories, getFirstLetters } from "@/lib/utils";
 import { AuctionItemProps, CategoryProps } from "@/types/types";
 import axios from "axios";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   CalendarIcon,
   Crown,
@@ -78,7 +78,6 @@ if (!backendUrl) {
 const Account = () => {
   const session = useSession();
   const user = session.data?.user;
-  console.log("ID:", session.data?.user.id);
   const [auctions, setAuctions] = useState<AuctionItemProps[]>([]);
   const [editAuction, setEditAuction] = useState({
     auction_id: 0,
@@ -101,6 +100,8 @@ const Account = () => {
   const [url, setUrl] = useState<string>("");
   const { edgestore } = useEdgeStore();
   const [loading, setLoading] = useState<boolean>(true);
+  const [bids, setBids] = useState([]);
+
   useEffect(() => {
     setLoading(true);
     axios
@@ -121,6 +122,31 @@ const Account = () => {
         console.error("Error fetching auctions:", error);
         setLoading(false);
       });
+  }, [session.data?.user.id]);
+
+  useEffect(() => {
+    const fetchBids = async () => {
+      setLoading(true);
+      try {
+        if (session.data?.user.id) {
+          const res = await axios.get(
+            `https://localhost:7174/api/bid/${session.data.user.id}`
+          );
+          const { data } = res.data;
+          setBids(data);
+          console.table(data);
+        } else {
+          setBids([]);
+        }
+      } catch (error) {
+        console.error("Error fetching bids:", error);
+        setBids([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBids();
   }, [session.data?.user.id]);
 
   useEffect(() => {
@@ -550,25 +576,68 @@ const Account = () => {
         </Card>
         <Card className="p-2 lg:flex-1">
           <Label className="text-2xl font-semibold">Won Bids</Label>
-          {/* <div className="min-h-full flex items-center justify-center">
-            <p className="-mt-20">No items won yet. Keep bidding!</p>
-          </div> */}
           <Separator className="mb-2" />
-          <ScrollArea className="h-80">
-            <ItemListCard
-              image_url="images/no-image.png"
-              title="iPhone 15 Pro Max"
-              listed_date="2022-10-10"
-              type="won_bid"
-              isClaimed={true}
-            />
-            <ItemListCard
-              image_url="images/no-image.png"
-              title="Laptop Keyboard"
-              listed_date="2022-10-10"
-              type="won_bid"
-              amount={100}
-            />
+          <ScrollArea className="min-h-80 h-full w-full">
+            {loading ? (
+              <div className="min-h-full flex items-center justify-center">
+                <LoaderIcon className="animate-spin -mt-16" />
+              </div>
+            ) : (
+              <>
+                {(() => {
+                  const winningBids = bids.filter(
+                    (bid: {
+                      bid_id: string;
+                      amount: number;
+                      placed_on: Date;
+                      auction_id: number;
+                      bidder_id: number;
+                      auction_title: string;
+                      end_date: Date;
+                      high_bid: number;
+                      status: string;
+                    }) => {
+                      const isAuctionEnded =
+                        new Date(bid.end_date) <= new Date();
+                      return isAuctionEnded && bid.amount === bid.high_bid;
+                    }
+                  );
+
+                  return winningBids.length === 0 ? (
+                    <div className="min-h-full flex items-center justify-center">
+                      <p className="-mt-16">No items won yet. Keep bidding!</p>
+                    </div>
+                  ) : (
+                    winningBids.map(
+                      (bid: {
+                        bid_id: string;
+                        amount: number;
+                        placed_on: Date;
+                        auction_id: number;
+                        bidder_id: number;
+                        auction_title: string;
+                        end_date: Date;
+                        high_bid: number;
+                        status: string;
+                      }) => (
+                        <ItemListCard
+                          key={bid.bid_id}
+                          auction_id={bid.auction_id}
+                          title={bid.auction_title}
+                          placed_on={formatDistanceToNow(
+                            new Date(bid.placed_on),
+                            {
+                              addSuffix: true,
+                            }
+                          )}
+                          status={bid.status}
+                        />
+                      )
+                    )
+                  );
+                })()}
+              </>
+            )}
           </ScrollArea>
         </Card>
       </div>

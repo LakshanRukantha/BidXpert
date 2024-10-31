@@ -28,7 +28,7 @@ namespace BidXpert_Backend_API.Controllers
             {
                 await con.OpenAsync();
 
-                string query = @"SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, b.Status, a.Name AS Auction_Title FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id WHERE b.Bidder_id = @Bidder_id;";
+                string query = @"SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, b.Status, a.Name AS Auction_Title, a.End_date, a.High_bid FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id WHERE b.Bidder_id = @Bidder_id;";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
@@ -46,6 +46,8 @@ namespace BidXpert_Backend_API.Controllers
                                 Auction_id = reader.GetInt32(reader.GetOrdinal("Auction_id")),
                                 Bidder_id = reader.GetInt32(reader.GetOrdinal("Bidder_id")),
                                 Auction_title = reader.GetString(reader.GetOrdinal("Auction_Title")),
+                                End_date = reader.GetDateTime(reader.GetOrdinal("End_date")),
+                                High_bid = reader.GetDecimal(reader.GetOrdinal("High_bid")),
                                 Status = reader.GetString(reader.GetOrdinal("Status"))
                             };
 
@@ -74,7 +76,7 @@ namespace BidXpert_Backend_API.Controllers
             {
                 await con.OpenAsync();
 
-                string query = "SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, b.Status, a.Name AS Auction_Title FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id;";
+                string query = "SELECT b.Bid_id, b.Amount, b.Placed_on, b.Auction_id, b.Bidder_id, b.Status, a.Name AS Auction_Title, a.Listed_on, a.High_bid FROM Bid b JOIN Auction a ON b.Auction_id = a.Auction_id;";
 
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
@@ -91,6 +93,8 @@ namespace BidXpert_Backend_API.Controllers
                                 Auction_id = reader.GetInt32(reader.GetOrdinal("Auction_id")),
                                 Bidder_id = reader.GetInt32(reader.GetOrdinal("Bidder_id")),
                                 Auction_title = reader.GetString(reader.GetOrdinal("Auction_Title")),
+                                End_date = reader.GetDateTime(reader.GetOrdinal("Listed_on")),
+                                High_bid = reader.GetDecimal(reader.GetOrdinal("High_bid")),
                                 Status = reader.GetString(reader.GetOrdinal("Status"))
                             };
 
